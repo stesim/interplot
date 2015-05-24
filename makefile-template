@@ -1,0 +1,40 @@
+TARGET          := interplot
+CXX             := clang++
+
+SRCDIR          := ../../src/$(TARGET)
+#DEPENDDIR       := .depend
+
+SRC              = $(wildcard $(SRCDIR)/*.cpp)
+OBJ              = $(SRC:$(SRCDIR)/%.cpp=%.o)
+#DEP              = $(OBJ:%.o=$(DEPENDDIR)/%.d)
+DEP              = $(OBJ:%.o=%.d)
+BIN              = $(TARGET)
+
+CXXFLAGS        := #[CXXFLAGS]
+LIBS            := #[LIBS]
+INCLUDES        := -I../../include/interplot
+
+#$(BIN): make-dirs $(DEP) $(OBJ)
+$(BIN): $(DEP) $(OBJ)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJ) $(LIBS) -o $(BIN)
+
+$(OBJ): %.o : $(SRCDIR)/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+#$(DEP): $(DEPENDDIR)/%.d : $(SRCDIR)/%.cpp
+$(DEP): %.d : $(SRCDIR)/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -MM $< > $@
+
+run: $(BIN)
+	./$(BIN)
+
+make-dirs:
+	@if [ ! -d "$(DEPENDDIR)" ]; then mkdir "$(DEPENDDIR)"; fi
+
+clean:
+	#rm -rf $(OBJ) $(BIN) $(DEPENDDIR)
+	rm -f $(OBJ) $(BIN) $(DEP)
+
+-include $(DEP)
+
+.PHONY: run make-dirs clean
