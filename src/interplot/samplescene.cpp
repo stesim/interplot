@@ -33,6 +33,8 @@ SampleScene::SampleScene()
 	bind( Bindings::RollCCW )         = SDL_SCANCODE_Q;
 	bind( Bindings::RenderWireframe ) = SDL_SCANCODE_R;
 	bind( Bindings::RenderFill )      = SDL_SCANCODE_F;
+	bind( Bindings::FastForward )     = SDL_SCANCODE_LSHIFT;
+	bind( Bindings::StopTime )        = SDL_SCANCODE_LCTRL;
 }
 
 SampleScene::~SampleScene()
@@ -153,7 +155,7 @@ void SampleScene::initialize()
 void SampleScene::update()
 {
 	Camera& cam = *m_pActiveCamera;
-	ftime deltaTime = engine.time.delta;
+	ftime deltaTime = engine.time.realDelta;
 
 #define IS_PRESSED(bind) ( engine.input.isKeyPressed( bind( Bindings::bind ) ) )
 
@@ -253,6 +255,18 @@ void SampleScene::update()
 	if( is_pressed( Bindings::RenderFill ) )
 	{
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	}
+	if( is_pressed( Bindings::StopTime ) )
+	{
+		engine.time.scale = 0.0f;
+	}
+	else if( is_pressed( Bindings::FastForward ) )
+	{
+		engine.time.scale = 3.0f;
+	}
+	else
+	{
+		engine.time.scale = 1.0f;
 	}
 
 #undef IS_PRESSED

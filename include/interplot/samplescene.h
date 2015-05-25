@@ -32,6 +32,8 @@ private:
 		RollCCW,
 		RenderWireframe,
 		RenderFill,
+		FastForward,
+		StopTime,
 		COUNT
 	};
 

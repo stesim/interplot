@@ -5,6 +5,7 @@
 #include "shader.h"
 #include <utility>
 #include <glm/fwd.hpp>
+#include <unordered_map>
 
 #include <type_traits>
 
@@ -25,26 +26,18 @@ public:
 		ModelMatrix,
 		ModelNormalMatrix,
 		Time,
-		Count
+		Custom,
+		Count,
+	};
+
+private:
+	class StaticInitializer
+	{
+	public:
+		StaticInitializer();
 	};
 
 public:
-	//template<typename... T>
-	//inline static ShaderProgram* assemble( T&... shaders )
-	//{
-	//	ShaderProgram* prog = new ShaderProgram();
-	//	prog->assignShaders( std::forward<T>( shaders )... );
-	//	return prog;
-	//}
-
-	inline static ShaderProgram* assemble( Shader& shader1, Shader& shader2 )
-	{
-		ShaderProgram* prog = new ShaderProgram();
-		prog->addShader( shader1 );
-		prog->addShader( shader2 );
-		return prog;
-	}
-
 	static ShaderProgram* assemble(
 			Shader* shader1,
 			Shader* shader2,
@@ -103,6 +96,7 @@ public:
 
 	inline const char* getName() const { return m_pName; }
 
+	// TODO: move uniform setter to header (inline)
 	void setUniform( Uniform type, float val );
 	void setUniform( Uniform type, const glm::vec2& vec );
 	void setUniform( Uniform type, const glm::vec3& vec );
@@ -128,11 +122,30 @@ private:
 		assignShaders( std::forward<T>( shaders )... );
 	}
 
+	inline static Uniform     nameToUniform( const char* name );
+
+	inline static const char* uniformToName( Uniform uniform );
+
 	void extractUniformLocations();
+
+	void inspect();
 
 private:
 	static constexpr int  NAME_SIZE           = 64;
 	static constexpr int  NUM_SHADERS         = 5;
+
+	static constexpr char UNIFORM_NAMES[][ NAME_SIZE ] = {
+		"mat_view",               // view matrix
+		"mat_view_normal",        // view normal matrix
+		"mat_projection",         // projection matrix
+		"mat_view_projection",    // view-projection matrix
+		"mat_model",              // model matrix
+		"mat_model_normal",       // model normal matrix
+		"f_time",                 // engine time as float
+	};
+
+	static std::unordered_map<std::string, Uniform> s_mapNameToUniform;
+	static StaticInitializer                        s_Initializer;
 
 	GLuint  m_glProgram;
 	char    m_pName[ NAME_SIZE ];

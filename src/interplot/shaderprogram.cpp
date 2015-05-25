@@ -5,6 +5,21 @@
 namespace interplot
 {
 
+constexpr char ShaderProgram::UNIFORM_NAMES[][ NAME_SIZE ];
+
+std::unordered_map<std::string, ShaderProgram::Uniform>
+	ShaderProgram::s_mapNameToUniform;
+
+ShaderProgram::StaticInitializer ShaderProgram::s_Initializer;
+
+ShaderProgram::StaticInitializer::StaticInitializer()
+{
+	for( int i = 0; i < enum_cast( Uniform::Custom ); ++i )
+	{
+		s_mapNameToUniform[ UNIFORM_NAMES[ i ] ] = enum_cast<Uniform>( i );
+	}
+}
+
 ShaderProgram::ShaderProgram()
 	: m_glProgram( 0 ),
 	m_pName( "" ),
@@ -49,6 +64,8 @@ ShaderProgram* ShaderProgram::assemble(
 	SP_ADD_SHADER( shader5 );
 	SP_ADD_SHADER( shader6 );
 
+	prog->m_glProgram = glCreateProgram();
+
 	return prog;
 }
 
@@ -78,12 +95,12 @@ void ShaderProgram::addShader( Shader& shader )
 
 bool ShaderProgram::link()
 {
-	if( m_pVertexShader == nullptr || m_pFragmentShader == nullptr )
+	if( m_glProgram == 0 ||
+			m_pVertexShader == nullptr || m_pFragmentShader == nullptr )
 	{
 		return false;
 	}
 
-	m_glProgram = glCreateProgram();
 	if( m_pVertexShader != nullptr )
 	{
 		glAttachShader( m_glProgram, m_pVertexShader->getID() );
@@ -106,14 +123,16 @@ bool ShaderProgram::link()
 	}
 	glLinkProgram( m_glProgram );
 
-	if( !isLinked() )
+	if( isLinked() )
 	{
-		return false;
+		inspect();
+		extractUniformLocations();
+		return true;
 	}
-
-	extractUniformLocations();
-
-	return true;
+	else
+	{
+		return true;
+	}
 }
 
 void ShaderProgram::getLinkLog(
@@ -126,24 +145,6 @@ void ShaderProgram::getLinkLog(
 	{
 		*logLength = outLength;
 	}
-}
-
-void ShaderProgram::extractUniformLocations()
-{
-	m_UniformLocations[ enum_cast( Uniform::ViewMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_view" );
-	m_UniformLocations[ enum_cast( Uniform::ViewNormalMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_viewNormal" );
-	m_UniformLocations[ enum_cast( Uniform::ProjectionMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_projection" );
-	m_UniformLocations[ enum_cast( Uniform::ViewProjectionMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_viewProjection" );
-	m_UniformLocations[ enum_cast( Uniform::ModelMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_model" );
-	m_UniformLocations[ enum_cast( Uniform::ModelNormalMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_modelNormal" );
-	m_UniformLocations[ enum_cast( Uniform::Time ) ] =
-		glGetUniformLocation( m_glProgram, "f_time" );
 }
 
 void ShaderProgram::setUniform( Uniform type, float val )
@@ -191,6 +192,131 @@ void ShaderProgram::setUniform( Uniform type, const glm::mat4& vec )
 			1,
 			GL_FALSE,
 			glm::value_ptr( vec ) );
+}
+
+ShaderProgram::Uniform ShaderProgram::nameToUniform( const char* name )
+{
+	auto iter = s_mapNameToUniform.find( name );
+	if( iter != s_mapNameToUniform.end() )
+	{
+		return iter->second;
+	}
+	else
+	{
+		return Uniform::Custom;
+	}
+}
+
+const char* ShaderProgram::uniformToName( Uniform uniform )
+{
+	auto index = enum_cast( uniform );
+	if( index < enum_cast( Uniform::Custom ) )
+	{
+		return UNIFORM_NAMES[ index ];
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+void ShaderProgram::extractUniformLocations()
+{
+	/*
+	m_UniformLocations[ enum_cast( Uniform::ViewMatrix ) ] =
+		glGetUniformLocation( m_glProgram, "mat_view" );
+	m_UniformLocations[ enum_cast( Uniform::ViewNormalMatrix ) ] =
+		glGetUniformLocation( m_glProgram, "mat_viewNormal" );
+	m_UniformLocations[ enum_cast( Uniform::ProjectionMatrix ) ] =
+		glGetUniformLocation( m_glProgram, "mat_projection" );
+	m_UniformLocations[ enum_cast( Uniform::ViewProjectionMatrix ) ] =
+		glGetUniformLocation( m_glProgram, "mat_viewProjection" );
+	m_UniformLocations[ enum_cast( Uniform::ModelMatrix ) ] =
+		glGetUniformLocation( m_glProgram, "mat_model" );
+	m_UniformLocations[ enum_cast( Uniform::ModelNormalMatrix ) ] =
+		glGetUniformLocation( m_glProgram, "mat_modelNormal" );
+	m_UniformLocations[ enum_cast( Uniform::Time ) ] =
+		glGetUniformLocation( m_glProgram, "f_time" );
+	*/
+
+	printf( "Inspecting shader %d:\n"
+			"---------------------\n",
+			m_glProgram );
+
+	char nameBuf[ NAME_SIZE ];
+
+	GLint numUniforms;
+	glGetProgramiv( m_glProgram, GL_ACTIVE_UNIFORMS,   &numUniforms   );
+
+	for( GLint i = 0; i < numUniforms; ++i )
+	{
+		GLint  size;
+		GLenum type;
+		glGetActiveUniform(
+				m_glProgram,
+				i,
+				sizeof( nameBuf ),
+				nullptr,
+				&size,
+				&type,
+				nameBuf );
+
+		Uniform uniformType = nameToUniform( nameBuf );
+		if( uniformType != Uniform::Custom )
+		{
+			m_UniformLocations[ enum_cast( uniformType ) ] = i;
+		}
+		else
+		{
+			dbg_printf(
+					"Custom uniform discovered (shader : %d): %s\n",
+					m_glProgram, nameBuf );
+		}
+
+		printf( "Uniform %d:\n"
+				"  Name: %s\n"
+				"  Type: %d\n"
+				"  Size: %d\n",
+				i, nameBuf, type, size );
+	}
+
+	printf( "---------------------\n" );
+}
+
+void ShaderProgram::inspect()
+{
+//	char nameBuf[ NAME_SIZE ];
+//
+//	printf( "Inspecting shader %d:\n"
+//			"---------------------\n",
+//			m_glProgram );
+//
+//	GLint numAttributes;
+//	glGetProgramiv( m_glProgram, GL_ACTIVE_ATTRIBUTES, &numAttributes );
+//	GLint numUniforms;
+//	glGetProgramiv( m_glProgram, GL_ACTIVE_UNIFORMS,   &numUniforms   );
+//
+//	for( GLint i = 0; i < numUniforms; ++i )
+//	{
+//		GLint  size;
+//		GLenum type;
+//		glGetActiveUniform(
+//				m_glProgram,
+//				i,
+//				sizeof( nameBuf ),
+//				nullptr,
+//				&size,
+//				&type,
+//				nameBuf );
+//
+//		printf( "Uniform %d:\n"
+//				"  Name: %s\n"
+//				"  Type: %d\n"
+//				"  Size: %d\n",
+//				i, nameBuf, type, size );
+//	}
+//
+//	printf( "---------------------\n" );
 }
 
 }
