@@ -1,6 +1,5 @@
 #include "samplescene.h"
 #include "vertex.h"
-//#include "glhelper.h"
 #include "shaderprogram.h"
 #include "globaltimes.h"
 #include "camera.h"
@@ -111,6 +110,15 @@ void SampleScene::initialize()
 			vertex_offset( Vertex, normal ) );
 	*/
 
+	m_VertexBuffer.resize( 4 );
+	m_VertexBuffer.allocHostMemory();
+	m_VertexBuffer[ 0 ] = LineVertex( 0.0f, 0.0f );
+	m_VertexBuffer[ 1 ] = LineVertex( 0.0f, 1.0f );
+	m_VertexBuffer[ 2 ] = LineVertex( 1.0f, 1.0f );
+	m_VertexBuffer[ 3 ] = LineVertex( 1.0f, 0.0f );
+	m_VertexBuffer.copyToDevice();
+
+	/*
 	LineVertex points[] = {
 		// floor quad
 		LineVertex(  0.0f,  0.0f ),
@@ -144,6 +152,7 @@ void SampleScene::initialize()
 			GL_FALSE,
 			sizeof( LineVertex ),
 			vertex_offset( LineVertex, pos ) );
+	*/
 
 	m_pShaderProgram = engine.shaders.getProgram( "line" );
 
@@ -302,8 +311,11 @@ void SampleScene::render()
 	m_pShaderProgram->setUniform(
 			ShaderProgram::Uniform::ModelNormalMatrix,
 			glm::mat3( 1.0f ) );
-	glBindVertexArray( m_glVao );
-	glDrawArrays( GL_PATCHES, 0, m_uiNumVertices );
+	//glBindVertexArray( m_glVao );
+	engine.setVertexLayout<decltype( m_VertexBuffer )::VertexType>();
+	m_VertexBuffer.bind();
+	//glDrawArrays( GL_PATCHES, 0, m_uiNumVertices );
+	glDrawArrays( GL_PATCHES, 0, m_VertexBuffer.size() * sizeof( decltype( m_VertexBuffer )::VertexType ) );
 
 	//m_Line.render();
 }

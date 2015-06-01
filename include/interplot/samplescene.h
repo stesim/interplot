@@ -5,6 +5,7 @@
 #include <cstdint>
 #include "input.h"
 #include "line.h"
+#include "vertexbuffer.h"
 
 namespace interplot
 {
@@ -58,9 +59,11 @@ private:
 private:
 	uint8_t m_KeyBindings[ static_cast<int>( Bindings::COUNT ) ];
 
-	GLuint m_glVbo;
-	GLuint m_glVao;
-	unsigned int m_uiNumVertices;
+	VertexBuffer<LineVertex> m_VertexBuffer;
+
+	//GLuint m_glVbo;
+	//GLuint m_glVao;
+	//unsigned int m_uiNumVertices;
 
 	ShaderProgram* m_pShaderProgram;
 

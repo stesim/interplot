@@ -5,7 +5,7 @@ TARGETMAKE       = $(TARGETDIR)/makefile
 RESDIR           = resources
 
 CXXFLAGS        := -Wall -pedantic -march=native -std=c++11
-LIBS            := -pthread -lGL -lGLEW -lSDL2
+LIBS            := -pthread -lGL -lGLEW -lSDL2 -lfreeimageplus
 
 TARGET          := debug
 TARGETFLAGS     := -g -DDEBUG

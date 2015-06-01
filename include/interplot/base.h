@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdio>
-#include <type_traits>
 
 //#ifndef NDEBUG
 //#define DEBUG
@@ -10,20 +9,10 @@
 #define GLM_FORCE_RADIANS
 #include <glm/vec3.hpp>
 
+#include "enum.h"              // useful enum class functionality
+
 namespace interplot
 {
-
-template<typename T>
-constexpr typename std::underlying_type<T>::type enum_cast( T value )
-{
-	return static_cast<typename std::underlying_type<T>::type>( value );
-}
-
-template<typename T>
-constexpr T enum_cast( typename std::underlying_type<T>::type value )
-{
-	return static_cast<T>( value );
-}
 
 const glm::vec3 vec_x = glm::vec3( 1.0f, 0.0f, 0.0f );
 const glm::vec3 vec_y = glm::vec3( 0.0f, 1.0f, 0.0f );

@@ -7,7 +7,9 @@ Engine engine;
 
 Engine::Engine()
 	: frame( 0 ),
-	m_pCurrentScene( nullptr )
+	m_pCurrentScene( nullptr ),
+	m_uiActiveVertexAttributes( 0 ),
+	m_glDefaultVao( 0 )
 {
 }
 
@@ -20,7 +22,15 @@ void Engine::initialize()
 	time.initialize();
 	input.initialize();
 
+	glGenVertexArrays( 1, &m_glDefaultVao );
+	glBindVertexArray( m_glDefaultVao );
+
 	initializeDefaultShaders();
+}
+
+void Engine::finalize()
+{
+	glDeleteVertexArrays( 1, &m_glDefaultVao );
 }
 
 void Engine::update()

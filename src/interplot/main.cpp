@@ -1,7 +1,6 @@
 #include <GL/glew.h>
 #include "interplot.h"
 #include "window.h"
-#include "glhelper.h"
 #include "camera.h"
 #include "input.h"
 #include "engine.h"
@@ -10,6 +9,7 @@
 #include <cmath>
 #include "samplescene.h"
 #include "globaltimes.h"
+#include "image.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
