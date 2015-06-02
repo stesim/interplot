@@ -4,7 +4,6 @@
 #include "scene.h"
 #include <cstdint>
 #include "input.h"
-#include "line.h"
 #include "vertexbuffer.h"
 
 namespace interplot
@@ -66,8 +65,6 @@ private:
 	//unsigned int m_uiNumVertices;
 
 	ShaderProgram* m_pShaderProgram;
-
-	Line   m_Line;
 };
 
 }

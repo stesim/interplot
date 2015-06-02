@@ -1,9 +1,9 @@
-#include "vertexbuffer.h"
+#include "bufferbase.h"
 
 namespace interplot
 {
 
-VertexBufferBase::VertexBufferBase() :
+BufferBase::BufferBase() :
 	m_Size( 0 ),
 	m_DeviceSize( 0 ),
 	m_pData( nullptr ),
@@ -15,7 +15,7 @@ VertexBufferBase::VertexBufferBase() :
 	glCreateBuffers( 1, &m_glVbo );
 }
 
-VertexBufferBase::~VertexBufferBase()
+BufferBase::~BufferBase()
 {
 	if( m_pData != nullptr )
 	{
@@ -23,7 +23,7 @@ VertexBufferBase::~VertexBufferBase()
 	}
 }
 
-void VertexBufferBase::allocHostMemory()
+void BufferBase::allocHostMemory()
 {
 	if( m_Size > 0 && m_pData == nullptr )
 	{
@@ -31,7 +31,7 @@ void VertexBufferBase::allocHostMemory()
 	}
 }
 
-void VertexBufferBase::freeHostMemory()
+void BufferBase::freeHostMemory()
 {
 	if( m_pData != nullptr )
 	{
@@ -40,7 +40,7 @@ void VertexBufferBase::freeHostMemory()
 	}
 }
 
-void VertexBufferBase::copyToDevice( std::size_t offset, std::size_t size )
+void BufferBase::copyToDevice( std::size_t offset, std::size_t size )
 {
 	if( m_DeviceSize < offset + size )
 	{
@@ -51,7 +51,7 @@ void VertexBufferBase::copyToDevice( std::size_t offset, std::size_t size )
 			m_glVbo, offset, size, &m_pData[ offset ] );
 }
 
-void VertexBufferBase::resize( std::size_t size )
+void BufferBase::resize( std::size_t size )
 {
 	if( m_Size != size )
 	{
@@ -65,7 +65,7 @@ void VertexBufferBase::resize( std::size_t size )
 	}
 }
 
-GLenum VertexBufferBase::toGlUsage( Access access, Usage usage )
+GLenum BufferBase::toGlUsage( Access access, Usage usage )
 {
 	switch( usage )
 	{
@@ -102,7 +102,7 @@ GLenum VertexBufferBase::toGlUsage( Access access, Usage usage )
 	}
 }
 
-void VertexBufferBase::resizeDevice()
+void BufferBase::resizeDevice()
 {
 	m_DeviceSize = m_Size;
 	glNamedBufferData(

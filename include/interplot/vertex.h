@@ -6,9 +6,46 @@
 #include <glm/vec4.hpp>
 #include <cstddef>
 #include <tuple>
+#include "base.h"
 
 namespace interplot
 {
+
+/*
+ * Structures overview:
+ * --------------------
+ *
+ *   VertexAttribProb:   maps composite type to type and number of components
+ *                       e.g. glm::vec3 -> 3 x float
+ *                       (specialized through VERTEX_ATTRIB_TYPE_TO_GL)
+ *
+ *   VertexDescriptor:   vertex layout description, providing information on
+ *                       number of used attributes, their OpenGL types and
+ *                       number of components
+ *
+ *   ComponentType:      maps C++ type to respective OpenGL enum value
+ *                       (specialized through TYPE_TO_COMPONENT_TYPE)
+ *
+ *   VertexLayout:       helper class for easier descriptor construction;
+ *                       constructs descriptor from type parameter pack
+ *
+ * Using the structures:
+ * ---------------------
+ * 
+ * Vertex structures must have a 'layout' typedef containing a VertexDescriptor
+ * static member named 'descriptor'. This can be achieved by aliasing the
+ * respective VertexLayout type to 'layout'
+ *   
+ *   public:
+ *   using layout = VertexLayout<Tattr1, ..., TattrN>;
+ *
+ * or by using the VERTEX_LAYOUT macro
+ *
+ *   VERTEX_LAYOUT( Tattr1, ..., TattrN );
+ *
+ * inside the vertex declaration body. Alternatively, both 'layout' and
+ * 'descriptor' can be set manually.
+ */
 
 template<typename T>
 struct VertexAttribProp;
@@ -25,53 +62,56 @@ VERTEX_ATTRIB_TYPE_TO_GL( glm::vec2, 2, float );
 VERTEX_ATTRIB_TYPE_TO_GL( glm::vec3, 3, float );
 VERTEX_ATTRIB_TYPE_TO_GL( glm::vec4, 4, float );
 
-namespace internal
+struct VertexDescriptor
 {
-	template<typename T>
-	void setGlVertexAttribFormat( GLuint index, GLint size, GLuint offset );
-
-	template<>
-	inline void setGlVertexAttribFormat<float>(
-			GLuint index, GLint size, GLuint offset )
+public:
+	enum class ComponentType
 	{
-		glVertexAttribFormat( index, size, GL_FLOAT, GL_FALSE, offset );
-	}
+		Float = GL_FLOAT,
+		Int = GL_INT,
+		Byte = GL_BYTE,
+	};
 
-	template<typename T1>
-	void setGlVertexAttributes( GLuint index, GLuint offset )
-	{
-		setGlVertexAttribFormat<typename VertexAttribProp<T1>::component_type>(
-				index, VertexAttribProp<T1>::components, offset );
-	}
+public:
+	static constexpr std::size_t MAX_ATTRIBUTES = 16;
 
-	template<typename T1, typename... T,
-		typename = typename std::enable_if<( sizeof...( T ) > 0)>::type>
-	void setGlVertexAttributes( GLuint index, GLuint offset )
-	{
-		setGlVertexAttribFormat<typename VertexAttribProp<T1>::component_type>(
-				index, VertexAttribProp<T1>::components, offset );
-
-		setGlVertexAttributes<T...>( index + 1, offset + sizeof( T1 ) );
-	}
+	std::size_t     attributes;
+	ComponentType   type[ MAX_ATTRIBUTES ];
+	std::size_t     components[ MAX_ATTRIBUTES ];
 };
+
+template<typename T>
+struct ComponentType;
+
+#define TYPE_TO_COMPONENT_TYPE(type,component_type) \
+template<> \
+struct ComponentType<type> \
+{ \
+	static constexpr VertexDescriptor::ComponentType value = \
+		VertexDescriptor::ComponentType::component_type; \
+}
+
+TYPE_TO_COMPONENT_TYPE( GLfloat, Float );
+TYPE_TO_COMPONENT_TYPE( GLbyte,  Byte  );
+TYPE_TO_COMPONENT_TYPE( GLint,   Int   );
+
+#undef TYPE_TO_COMPONENT_TYPE
 
 template<typename... T>
 struct VertexLayout
 {
-	static constexpr std::size_t NUM_ATTRIBUTES = sizeof...( T );
-
-	static void activate()
-	{
-		internal::setGlVertexAttributes<T...>( 0, 0 );
-	}
+	static constexpr VertexDescriptor descriptor = VertexDescriptor{
+		sizeof...( T ),
+		{ ComponentType<typename VertexAttribProp<T>::component_type>::value... },
+		{ VertexAttribProp<T>::components... } };
 };
+
+template<typename... T>
+constexpr VertexDescriptor VertexLayout<T...>::descriptor;
 
 #define VERTEX_LAYOUT(...) \
 public: \
-	typedef VertexLayout<__VA_ARGS__> layout
-
-
-#define vertex_offset(type,member) ((const void*)offsetof(type,member))
+	using layout = VertexLayout<__VA_ARGS__>
 
 struct Vertex
 {

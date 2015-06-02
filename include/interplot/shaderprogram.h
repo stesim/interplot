@@ -104,8 +104,6 @@ public:
 	void setUniform( Uniform type, const glm::mat3& mat );
 	void setUniform( Uniform type, const glm::mat4& mat );
 
-	inline void use() const { glUseProgram( m_glProgram ); }
-
 private:
 	ShaderProgram();
 	~ShaderProgram();

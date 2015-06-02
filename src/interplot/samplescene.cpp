@@ -118,45 +118,7 @@ void SampleScene::initialize()
 	m_VertexBuffer[ 3 ] = LineVertex( 1.0f, 0.0f );
 	m_VertexBuffer.copyToDevice();
 
-	/*
-	LineVertex points[] = {
-		// floor quad
-		LineVertex(  0.0f,  0.0f ),
-		LineVertex(  0.0f,  1.0f ),
-		LineVertex(  1.0f,  1.0f ),
-		//LineVertex(  1.0f,  1.0f ),
-		LineVertex(  1.0f,  0.0f ),
-		//LineVertex(  0.0f,  0.0f ),
-	};
-
-	m_uiNumVertices = sizeof( points ) / sizeof( LineVertex );
-
-	GLuint& vbo = m_glVbo;
-	glGenBuffers( 1, &vbo );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo );
-	glBufferData(
-			GL_ARRAY_BUFFER,
-			sizeof( points ),
-			points,
-			GL_STATIC_DRAW );
-
-	GLuint& vao = m_glVao;
-	glGenVertexArrays( 1, &vao );
-	glBindVertexArray( vao );
-	glEnableVertexAttribArray( 0 );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo );
-	glVertexAttribPointer(
-			0,
-			2,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof( LineVertex ),
-			vertex_offset( LineVertex, pos ) );
-	*/
-
 	m_pShaderProgram = engine.shaders.getProgram( "line" );
-
-	//m_Line.initialize();
 
 	m_pActiveCamera->setPosition( glm::vec3( 5.0f, 5.0f, 20.0f ) );
 }
@@ -290,7 +252,7 @@ void SampleScene::render()
 
 	m_pActiveCamera->updateMatrices();
 
-	m_pShaderProgram->use();
+	engine.renderer.setShader( m_pShaderProgram );
 
 	m_pShaderProgram->setUniform(
 			ShaderProgram::Uniform::ViewMatrix,
@@ -311,13 +273,8 @@ void SampleScene::render()
 	m_pShaderProgram->setUniform(
 			ShaderProgram::Uniform::ModelNormalMatrix,
 			glm::mat3( 1.0f ) );
-	//glBindVertexArray( m_glVao );
-	engine.setVertexLayout<decltype( m_VertexBuffer )::VertexType>();
-	m_VertexBuffer.bind();
-	//glDrawArrays( GL_PATCHES, 0, m_uiNumVertices );
-	glDrawArrays( GL_PATCHES, 0, m_VertexBuffer.size() * sizeof( decltype( m_VertexBuffer )::VertexType ) );
 
-	//m_Line.render();
+	engine.renderer.render( m_VertexBuffer );
 }
 
 bool SampleScene::is_pressed( Bindings binding )

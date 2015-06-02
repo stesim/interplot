@@ -5,9 +5,12 @@
 #include "globaltimes.h"
 #include "shadermanager.h"
 #include "scene.h"
+#include "renderer.h"
 
 namespace interplot
 {
+
+struct VertexDescriptor;
 
 class Engine
 {
@@ -29,32 +32,6 @@ public:
 	}
 	void setScene( Scene* scene );
 
-	template<typename T>
-	void setVertexLayout()
-	{
-		typedef typename T::layout layout;
-
-		// disable no longer required attributes
-		for( GLuint i = layout::NUM_ATTRIBUTES;
-				i < m_uiActiveVertexAttributes;
-				++i )
-		{
-			glDisableVertexAttribArray( i );
-		}
-
-		// enable newly required attributes
-		for( GLuint i = m_uiActiveVertexAttributes;
-				i < layout::NUM_ATTRIBUTES;
-				++i )
-		{
-			glEnableVertexAttribArray( i );
-		}
-
-		m_uiActiveVertexAttributes = layout::NUM_ATTRIBUTES;
-
-		layout::activate();
-	}
-
 private:
 	void initializeDefaultShaders();
 
@@ -62,13 +39,11 @@ public:
 	Input         input;
 	GlobalTimes   time;
 	ShaderManager shaders;
+	Renderer      renderer;
 	unsigned long frame;
 
 private:
 	Scene* m_pCurrentScene;
-
-	GLuint m_uiActiveVertexAttributes;
-	GLuint m_glDefaultVao;
 };
 
 extern Engine engine;

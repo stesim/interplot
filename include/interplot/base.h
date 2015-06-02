@@ -1,10 +1,7 @@
 #pragma once
 
 #include <cstdio>
-
-//#ifndef NDEBUG
-//#define DEBUG
-//#endif
+#include <cassert>
 
 #define GLM_FORCE_RADIANS
 #include <glm/vec3.hpp>

@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "vertex.h"
 
 namespace interplot
 {
@@ -7,9 +8,7 @@ Engine engine;
 
 Engine::Engine()
 	: frame( 0 ),
-	m_pCurrentScene( nullptr ),
-	m_uiActiveVertexAttributes( 0 ),
-	m_glDefaultVao( 0 )
+	m_pCurrentScene( nullptr )
 {
 }
 
@@ -21,22 +20,21 @@ void Engine::initialize()
 {
 	time.initialize();
 	input.initialize();
-
-	glGenVertexArrays( 1, &m_glDefaultVao );
-	glBindVertexArray( m_glDefaultVao );
+	renderer.initialize();
 
 	initializeDefaultShaders();
 }
 
 void Engine::finalize()
 {
-	glDeleteVertexArrays( 1, &m_glDefaultVao );
+	renderer.finalize();
 }
 
 void Engine::update()
 {
 	time.update();
 	input.update();
+	renderer.update();
 
 	if( m_pCurrentScene != nullptr )
 	{
