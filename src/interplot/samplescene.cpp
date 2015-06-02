@@ -1,7 +1,6 @@
 #include "samplescene.h"
 #include "vertex.h"
 #include "shaderprogram.h"
-#include "globaltimes.h"
 #include "camera.h"
 #include "engine.h"
 #include <glm/mat4x4.hpp>

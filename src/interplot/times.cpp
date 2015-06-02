@@ -1,9 +1,9 @@
-#include "globaltimes.h"
+#include "times.h"
 
 namespace interplot
 {
 
-GlobalTimes::GlobalTimes()
+Times::Times()
 	: real( 0.0f ),
 	realDelta( 0.0f ),
 	scale( 1.0f ),
@@ -13,13 +13,13 @@ GlobalTimes::GlobalTimes()
 {
 }
 
-void GlobalTimes::initialize()
+void Times::initialize()
 {
 	using namespace std;
 	m_tStart = chrono::high_resolution_clock::now();
 }
 
-void GlobalTimes::update()
+void Times::update()
 {
 	using namespace std;
 	itime newTicks = chrono::duration_cast<chrono::microseconds>(

@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <cmath>
 #include "samplescene.h"
-#include "globaltimes.h"
 #include "image.h"
 
 #include <glm/glm.hpp>

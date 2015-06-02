@@ -9,10 +9,10 @@ namespace interplot
 typedef float    ftime;
 typedef long int itime;
 
-class GlobalTimes
+class Times
 {
 public:
-	GlobalTimes();
+	Times();
 
 	void initialize();
 

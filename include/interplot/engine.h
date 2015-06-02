@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 #include "input.h"
-#include "globaltimes.h"
+#include "times.h"
 #include "shadermanager.h"
 #include "scene.h"
 #include "renderer.h"
@@ -37,7 +37,7 @@ private:
 
 public:
 	Input         input;
-	GlobalTimes   time;
+	Times         time;
 	ShaderManager shaders;
 	Renderer      renderer;
 	unsigned long frame;
