@@ -5,7 +5,9 @@
 #include "shader.h"
 #include <utility>
 #include <glm/fwd.hpp>
+#include <glm/ext.hpp>
 #include <unordered_map>
+#include "glutils.h"
 
 #include <type_traits>
 
@@ -30,6 +32,15 @@ public:
 		Count,
 	};
 
+	enum class UniformBlock
+	{
+		Camera,
+		Model,
+		Custom
+	};
+
+	typedef GLint CustomUniform;
+
 private:
 	class StaticInitializer
 	{
@@ -52,30 +63,36 @@ public:
 
 	inline Shader* getShader( Shader::Type type )
 	{
-#define SP_TYPE_CASE(type,var) case Shader::Type::type: return var;
 		switch( type )
 		{
-			SP_TYPE_CASE( Vertex,                 m_pVertexShader      )
-			SP_TYPE_CASE( TessellationControl,    m_pTessControlShader )
-			SP_TYPE_CASE( TessellationEvaluation, m_pTessEvalShader    )
-			SP_TYPE_CASE( Geometry,               m_pGeometryShader    )
-			SP_TYPE_CASE( Fragment,               m_pFragmentShader    )
+			case Shader::Type::Vertex:
+				return m_pVertexShader;
+			case Shader::Type::TessellationControl:
+				return m_pTessControlShader;
+			case Shader::Type::TessellationEvaluation:
+				return m_pTessEvalShader;
+			case Shader::Type::Geometry:
+				return m_pGeometryShader;
+			case Shader::Type::Fragment:
+				return m_pFragmentShader;
 		}
-#undef SP_TYPE_CASE
 	}
 
 	inline const Shader* getShader( Shader::Type type ) const
 	{
-#define SP_TYPE_CASE(type,var) case Shader::Type::type: return var;
 		switch( type )
 		{
-			SP_TYPE_CASE( Vertex,                 m_pVertexShader      )
-			SP_TYPE_CASE( TessellationControl,    m_pTessControlShader )
-			SP_TYPE_CASE( TessellationEvaluation, m_pTessEvalShader    )
-			SP_TYPE_CASE( Geometry,               m_pGeometryShader    )
-			SP_TYPE_CASE( Fragment,               m_pFragmentShader    )
+			case Shader::Type::Vertex:
+				return m_pVertexShader;
+			case Shader::Type::TessellationControl:
+				return m_pTessControlShader;
+			case Shader::Type::TessellationEvaluation:
+				return m_pTessEvalShader;
+			case Shader::Type::Geometry:
+				return m_pGeometryShader;
+			case Shader::Type::Fragment:
+				return m_pFragmentShader;
 		}
-#undef SP_TYPE_CASE
 	}
 
 	bool               link();
@@ -88,21 +105,107 @@ public:
 	}
 
 	void               getLinkLog(
-			std::size_t maxLength,
-			std::size_t* logLength,
-			char* log ) const;
+			std::size_t maxLength, std::size_t* logLength, char* log ) const;
 
 	inline GLuint      getID() const { return m_glProgram; }
 
 	inline const char* getName() const { return m_pName; }
 
-	// TODO: move uniform setter to header (inline)
-	void setUniform( Uniform type, float val );
-	void setUniform( Uniform type, const glm::vec2& vec );
-	void setUniform( Uniform type, const glm::vec3& vec );
-	void setUniform( Uniform type, const glm::vec4& vec );
-	void setUniform( Uniform type, const glm::mat3& mat );
-	void setUniform( Uniform type, const glm::mat4& mat );
+
+	inline void setUniform( Uniform type, GLfloat val )
+	{
+		glProgramUniform1f(
+				m_glProgram, m_UniformLocations[ enum_cast( type ) ], val );
+	}
+	inline void setUniform( Uniform type, const glm::vec2& vec )
+	{
+		glProgramUniform2fv(
+				m_glProgram,
+				m_UniformLocations[ enum_cast( type ) ],
+				1,
+				glm::value_ptr( vec ) );
+	}
+	inline void setUniform( Uniform type, const glm::vec3& vec )
+	{
+		glProgramUniform3fv(
+				m_glProgram,
+				m_UniformLocations[ enum_cast( type ) ],
+				1,
+				glm::value_ptr( vec ) );
+	}
+	inline void setUniform( Uniform type, const glm::vec4& vec )
+	{
+		glProgramUniform4fv(
+				m_glProgram,
+				m_UniformLocations[ enum_cast( type ) ],
+				1,
+				glm::value_ptr( vec ) );
+	}
+	inline void setUniform( Uniform type, const glm::mat3& mat )
+	{
+		glProgramUniformMatrix3fv(
+				m_glProgram,
+				m_UniformLocations[ enum_cast( type ) ],
+				1,
+				GL_FALSE,
+				glm::value_ptr( mat ) );
+	}
+	inline void setUniform( Uniform type, const glm::mat4& mat )
+	{
+		glProgramUniformMatrix4fv(
+				m_glProgram,
+				m_UniformLocations[ enum_cast( type ) ],
+				1,
+				GL_FALSE,
+				glm::value_ptr( mat ) );
+	}
+
+
+	inline CustomUniform getCustomUniform( const char* name )
+	{
+#ifdef DEBUG
+		CustomUniform res = glGetUniformLocation( m_glProgram, name );
+		if( res < 0 )
+		{
+			dbg_printf( "Shader %d variable '%s' is not active "
+					"or does not exist.\n", m_glProgram, name );
+		}
+		return res;
+#else
+		return glGetUniformLocation( m_glProgram, name );
+#endif
+	}
+
+	inline void setCustomUniform( CustomUniform uniform, GLfloat val )
+	{
+		glProgramUniform1f( m_glProgram, uniform, val );
+	}
+	inline void setCustomUniform( CustomUniform uniform, GLuint val )
+	{
+		glProgramUniform1ui( m_glProgram, uniform, val );
+	}
+	inline void setCustomUniform( CustomUniform uniform, const glm::vec2& vec )
+	{
+		glProgramUniform2fv( m_glProgram, uniform, 1, glm::value_ptr( vec ) );
+	}
+	inline void setCustomUniform( CustomUniform uniform, const glm::vec3& vec )
+	{
+		glProgramUniform3fv( m_glProgram, uniform, 1, glm::value_ptr( vec ) );
+	}
+	inline void setCustomUniform( CustomUniform uniform, const glm::vec4& vec )
+	{
+		glProgramUniform4fv( m_glProgram, uniform, 1, glm::value_ptr( vec ) );
+	}
+	inline void setCustomUniform( CustomUniform uniform, const glm::mat3& mat )
+	{
+		glProgramUniformMatrix3fv(
+				m_glProgram, uniform, 1, GL_FALSE, glm::value_ptr( mat ) );
+	}
+	inline void setCustomUniform( CustomUniform uniform, const glm::mat4& mat )
+	{
+		glProgramUniformMatrix4fv(
+				m_glProgram, uniform, 1, GL_FALSE, glm::value_ptr( mat ) );
+	}
 
 private:
 	ShaderProgram();
@@ -139,7 +242,7 @@ private:
 		"mat_view_projection",    // view-projection matrix
 		"mat_model",              // model matrix
 		"mat_model_normal",       // model normal matrix
-		"f_time",                 // engine time as float
+		"f_time",                 // virtual time as float
 	};
 
 	static std::unordered_map<std::string, Uniform> s_mapNameToUniform;

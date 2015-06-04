@@ -120,6 +120,8 @@ void SampleScene::initialize()
 	m_pShaderProgram = engine.shaders.getProgram( "line" );
 
 	m_pActiveCamera->setPosition( glm::vec3( 5.0f, 5.0f, 20.0f ) );
+
+	m_Line.initialize();
 }
 
 void SampleScene::update()
@@ -240,6 +242,8 @@ void SampleScene::update()
 	}
 
 #undef IS_PRESSED
+
+	m_Line.update();
 }
 
 void SampleScene::render()
@@ -266,14 +270,16 @@ void SampleScene::render()
 			ShaderProgram::Uniform::Time,
 			engine.time.total );
 
-	m_pShaderProgram->setUniform(
-			ShaderProgram::Uniform::ModelMatrix,
-			glm::scale( glm::mat4( 1.0f ), glm::vec3( 1.0f ) ) );
-	m_pShaderProgram->setUniform(
-			ShaderProgram::Uniform::ModelNormalMatrix,
-			glm::mat3( 1.0f ) );
+//	m_pShaderProgram->setUniform(
+//			ShaderProgram::Uniform::ModelMatrix,
+//			glm::scale( glm::mat4( 1.0f ), glm::vec3( 1.0f ) ) );
+//	m_pShaderProgram->setUniform(
+//			ShaderProgram::Uniform::ModelNormalMatrix,
+//			glm::mat3( 1.0f ) );
+//
+//	engine.renderer.render( m_VertexBuffer, 0, m_VertexBuffer.size(), 16 );
 
-	engine.renderer.render( m_VertexBuffer );
+	m_Line.render();
 }
 
 bool SampleScene::is_pressed( Bindings binding )

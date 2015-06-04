@@ -49,6 +49,27 @@ public:
 		glDrawArrays( GL_PATCHES, offset, count );
 	}
 
+	template<typename T>
+	void render(
+			const VertexBuffer<T>& buffer,
+			std::size_t offset,
+			std::size_t count,
+			std::size_t instances )
+	{
+		assert( offset + count <= buffer.size() );
+
+		setVertexLayout( &buffer.getVertexDescriptor() );
+		
+		for( std::size_t i = 0; i < m_pVertexDescriptor->attributes; ++i )
+		{
+			glVertexAttribBinding( i, 0 );
+		}
+
+		glBindVertexBuffer( 0, buffer.getID(), 0, sizeof( T ) );
+
+		glDrawArraysInstanced( GL_PATCHES, offset, count, instances );
+	}
+
 	void setShader( ShaderProgram* shader );
 
 	void setVertexLayout( const VertexDescriptor* desc );

@@ -1,13 +1,16 @@
 #version 420
 
-in vec4 fs_in_color;
-in vec3 fs_in_normal;
-in vec3 fs_in_pos;
+in FragmentData
+{
+	vec3 position;
+	vec3 normal;
+	vec4 color;
+} fragment_data_in;
 
 out vec4 frag_color;
 
 void main()
 {
-	float dist = length( fs_in_pos );
-	frag_color = ( abs( dot( fs_in_pos / dist, normalize( fs_in_normal ) ) ) * max( 0.0, 0.95 - dist / 50.0 ) + 0.05 ) * fs_in_color;
+	float dist = length( fragment_data_in.position );
+	frag_color = ( abs( dot( fragment_data_in.position / dist, normalize( fragment_data_in.normal ) ) ) * max( 0.0, 0.95 - dist / 50.0 ) + 0.05 ) * fragment_data_in.color;
 }

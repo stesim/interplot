@@ -5,6 +5,7 @@
 #include <cstdint>
 #include "input.h"
 #include "vertexbuffer.h"
+#include "linevisual.h"
 
 namespace interplot
 {
@@ -60,11 +61,9 @@ private:
 
 	VertexBuffer<LineVertex> m_VertexBuffer;
 
-	//GLuint m_glVbo;
-	//GLuint m_glVao;
-	//unsigned int m_uiNumVertices;
-
 	ShaderProgram* m_pShaderProgram;
+
+	LineVisual m_Line;
 };
 
 }

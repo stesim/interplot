@@ -1,5 +1,4 @@
 #include "shaderprogram.h"
-#include <glm/ext.hpp>
 #include <algorithm>
 
 namespace interplot
@@ -147,53 +146,6 @@ void ShaderProgram::getLinkLog(
 	}
 }
 
-void ShaderProgram::setUniform( Uniform type, float val )
-{
-	glUniform1f( m_UniformLocations[ enum_cast( type ) ], val );
-}
-
-void ShaderProgram::setUniform( Uniform type, const glm::vec2& vec )
-{
-	glUniform2fv(
-			m_UniformLocations[ enum_cast( type ) ],
-			1,
-			glm::value_ptr( vec ) );
-}
-
-void ShaderProgram::setUniform( Uniform type, const glm::vec3& vec )
-{
-	glUniform3fv(
-			m_UniformLocations[ enum_cast( type ) ],
-			1,
-			glm::value_ptr( vec ) );
-}
-
-void ShaderProgram::setUniform( Uniform type, const glm::vec4& vec )
-{
-	glUniform4fv(
-			m_UniformLocations[ enum_cast( type ) ],
-			1,
-			glm::value_ptr( vec ) );
-}
-
-void ShaderProgram::setUniform( Uniform type, const glm::mat3& vec )
-{
-	glUniformMatrix3fv(
-			m_UniformLocations[ enum_cast( type ) ],
-			1,
-			GL_FALSE,
-			glm::value_ptr( vec ) );
-}
-
-void ShaderProgram::setUniform( Uniform type, const glm::mat4& vec )
-{
-	glUniformMatrix4fv(
-			m_UniformLocations[ enum_cast( type ) ],
-			1,
-			GL_FALSE,
-			glm::value_ptr( vec ) );
-}
-
 ShaderProgram::Uniform ShaderProgram::nameToUniform( const char* name )
 {
 	auto iter = s_mapNameToUniform.find( name );
@@ -222,23 +174,6 @@ const char* ShaderProgram::uniformToName( Uniform uniform )
 
 void ShaderProgram::extractUniformLocations()
 {
-	/*
-	m_UniformLocations[ enum_cast( Uniform::ViewMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_view" );
-	m_UniformLocations[ enum_cast( Uniform::ViewNormalMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_viewNormal" );
-	m_UniformLocations[ enum_cast( Uniform::ProjectionMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_projection" );
-	m_UniformLocations[ enum_cast( Uniform::ViewProjectionMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_viewProjection" );
-	m_UniformLocations[ enum_cast( Uniform::ModelMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_model" );
-	m_UniformLocations[ enum_cast( Uniform::ModelNormalMatrix ) ] =
-		glGetUniformLocation( m_glProgram, "mat_modelNormal" );
-	m_UniformLocations[ enum_cast( Uniform::Time ) ] =
-		glGetUniformLocation( m_glProgram, "f_time" );
-	*/
-
 	printf( "Inspecting shader %d:\n"
 			"---------------------\n",
 			m_glProgram );
@@ -278,6 +213,24 @@ void ShaderProgram::extractUniformLocations()
 				"  Type: %d\n"
 				"  Size: %d\n",
 				i, nameBuf, type, size );
+	}
+
+	GLint numUniformBlocks;
+	glGetProgramInterfaceiv(
+			m_glProgram,
+			GL_UNIFORM_BLOCK,
+			GL_ACTIVE_RESOURCES,
+			&numUniformBlocks );
+
+	for( GLint i = 0; i < numUniformBlocks; ++i )
+	{
+		glGetProgramResourceName(
+				m_glProgram,
+				GL_UNIFORM_BLOCK,
+				i,
+				NAME_SIZE,
+				nullptr,
+				nameBuf );
 	}
 
 	printf( "---------------------\n" );
