@@ -20,23 +20,43 @@ public:
 
 	void render();
 
+	std::size_t getNumPoints() const
+	{
+		return ( m_uiNumPoints * m_uiNumInstances );
+	}
 	void setNumPoints( std::size_t points );
 
+	std::size_t getTubeFaces() const
+	{
+		return m_uiNumFaces;
+	}
 	void setTubeFaces( std::size_t faces )
 	{
 		m_uiNumFaces = faces;
 	}
 
+	float getTubeRadius() const
+	{
+		return m_fRadius;
+	}
 	void setTubeRadius( float value )
 	{
 		m_fRadius = value;
 	}
 
+	std::size_t getNumLines() const
+	{
+		return m_uiNumLines;
+	}
 	void setNumLines( std::size_t lines )
 	{
 		m_uiNumLines = lines;
 	}
 
+	float getLineDistance() const
+	{
+		return m_fLineDistance;
+	}
 	void setLineDistance( float distance );
 
 private:

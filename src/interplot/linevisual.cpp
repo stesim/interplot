@@ -5,7 +5,7 @@
 namespace interplot
 {
 
-LineVisual::LineVisual() /*:
+LineVisual::LineVisual() :
 	m_fParamStart( 0.0f ),
 	m_fParamEnd( 1.0f ),
 	m_uiNumPoints( MAX_POINTS_PER_INSTANCE ),
@@ -13,7 +13,7 @@ LineVisual::LineVisual() /*:
 	m_uiNumFaces( 16 ),
 	m_fRadius( 0.05f ),
 	m_uiNumLines( 1 ),
-	m_fLineDistance( 1.0f )*/
+	m_fLineDistance( 1.0f )
 {
 }
 
@@ -48,15 +48,13 @@ void LineVisual::initialize()
 	m_uniLineDistance =
 		m_pShaderProgram->getCustomUniform( "f_lineDistance" );
 
-	m_pShaderProgram->setCustomUniform( m_uniParamStart,   0.0f );
-	m_pShaderProgram->setCustomUniform( m_uniParamEnd,     1.0f );
-	m_pShaderProgram->setCustomUniform( m_uniTubeFaces,    16u );
-	m_pShaderProgram->setCustomUniform( m_uniRadius,       0.05f );
-	m_pShaderProgram->setCustomUniform( m_uniLineDistance, 5.0f );
+	m_pShaderProgram->setCustomUniform( m_uniParamStart,   m_fParamStart );
+	m_pShaderProgram->setCustomUniform( m_uniParamEnd,     m_fParamEnd );
+	m_pShaderProgram->setCustomUniform( m_uniTubeFaces,    (GLuint)m_uiNumFaces );
+	m_pShaderProgram->setCustomUniform( m_uniRadius,       m_fRadius );
+	m_pShaderProgram->setCustomUniform( m_uniLineDistance, m_fLineDistance );
 
-	setNumPoints( 256 );
-
-	m_uiNumLines = 3;
+	setNumPoints( m_uiNumPoints );
 }
 
 void LineVisual::finalize()

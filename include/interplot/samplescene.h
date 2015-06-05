@@ -6,6 +6,7 @@
 #include "input.h"
 #include "vertexbuffer.h"
 #include "linevisual.h"
+#include "engine.h"
 
 namespace interplot
 {
@@ -35,6 +36,8 @@ private:
 		RenderFill,
 		FastForward,
 		StopTime,
+		IncreasePoints,
+		DecreasePoints,
 		COUNT
 	};
 
@@ -54,12 +57,18 @@ private:
 		return m_KeyBindings[ static_cast<int>( bind ) ];
 	}
 
-	inline bool is_pressed( Bindings binding );
+	inline bool isBindDown( Bindings binding )
+	{
+		return engine.input.isKeyDown( bind( binding ) );
+	}
+
+	inline bool wasBindPressed( Bindings binding )
+	{
+		return engine.input.wasKeyPressed( bind( binding ) );
+	}
 
 private:
 	uint8_t m_KeyBindings[ static_cast<int>( Bindings::COUNT ) ];
-
-	VertexBuffer<LineVertex> m_VertexBuffer;
 
 	ShaderProgram* m_pShaderProgram;
 

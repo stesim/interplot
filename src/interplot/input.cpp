@@ -1,12 +1,14 @@
 #include "input.h"
 #include <SDL2/SDL_events.h>
-#include <SDL2/SDL_mouse.h>
+#include <algorithm>
 
 namespace interplot
 {
 
-Input::Input()
-	: m_pKeyStates( nullptr ),
+Input::Input() :
+	m_pKeyStates( nullptr ),
+	m_pOldKeyStates( nullptr ),
+	m_uiKeyStateSize( 0 ),
 	m_uiMouseButtonState( 0 ),
 	m_vecMousePos( 0, 0 ),
 	m_vecMouseRel( 0, 0 )
@@ -19,12 +21,41 @@ Input::~Input()
 
 void Input::initialize()
 {
-	m_pKeyStates = SDL_GetKeyboardState( nullptr );
+	int stateSize;
+	m_pKeyStateSource = SDL_GetKeyboardState( &stateSize );
+	
+	m_pKeyStates      = new ScanCode[ stateSize ];
+	m_pOldKeyStates   = new ScanCode[ stateSize ];
+
+	m_uiKeyStateSize  = stateSize;
+
+	std::fill_n( m_pKeyStates,    stateSize, 0 );
+	std::fill_n( m_pOldKeyStates, stateSize, 0 );
+}
+
+void Input::finalize()
+{
+	if( m_pKeyStates != nullptr )
+	{
+		delete[] m_pKeyStates;
+		m_pKeyStates = nullptr;
+	}
+	if( m_pOldKeyStates != nullptr )
+	{
+		delete[] m_pOldKeyStates;
+		m_pOldKeyStates = nullptr;
+	}
 }
 
 void Input::update()
 {
 	SDL_PumpEvents();
+
+	ScanCode* swapTemp = m_pOldKeyStates;
+	m_pOldKeyStates    = m_pKeyStates;
+	m_pKeyStates       = swapTemp;
+
+	memcpy( m_pKeyStates, m_pKeyStateSource, m_uiKeyStateSize );
 
 	if( isMouseRelative() )
 	{
@@ -39,31 +70,6 @@ void Input::update()
 		m_vecMouseRel = newPos - m_vecMousePos;
 		m_vecMousePos = newPos;
 	}
-}
-
-bool Input::isKeyPressed( ScanCode key ) const
-{
-	return m_pKeyStates[ key ];
-}
-
-const glm::ivec2& Input::getMousePosition() const
-{
-	return m_vecMousePos;
-}
-
-const glm::ivec2& Input::getRelativeMouseMovement() const
-{
-	return m_vecMouseRel;
-}
-
-bool Input::isMouseButtonPressed( MouseButton button ) const
-{
-	return ( m_uiMouseButtonState & SDL_BUTTON( button ) );
-}
-
-bool Input::isMouseRelative() const
-{
-	return ( SDL_GetRelativeMouseMode() == SDL_TRUE );
 }
 
 void Input::setMouseRelative( bool state )

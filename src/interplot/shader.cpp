@@ -1,31 +1,49 @@
 #include "shader.h"
 #include "io.h"
+#include <cstring>
 
 namespace interplot
 {
 
 constexpr char Shader::NAME_TO_PATH_MASK[];
 
-Shader::Shader()
-	: m_Type( Type::Vertex ), // random default value
+Shader::Shader() :
+	m_Type( Type::Vertex ), // random default value
 	m_glShader( 0 ),
 	m_pName( "" ),
+	m_pSource( nullptr ),
+	m_uiSourceLength( 0 ),
 	m_bManaged( false )
 {
 }
 
-Shader::Shader( Type type, const char* source )
-	: m_Type( type ),
+Shader::Shader( Type type,
+		        const char* const* sources,
+				std::size_t numSources ) :
+	m_Type( type ),
 	m_glShader( 0 ),
 	m_pName( "" ),
+	m_pSource( nullptr ),
+	m_uiSourceLength( 0 ),
 	m_bManaged( false )
 {
 	m_glShader = glCreateShader( static_cast<GLuint>( type ) );
-	glShaderSource( m_glShader, 1, &source, nullptr );
+
+	glShaderSource( m_glShader, numSources, sources, nullptr );
+
+	GLint sourceLength;
+	glGetShaderiv( m_glShader, GL_SHADER_SOURCE_LENGTH, &sourceLength );
+
+	m_pSource = new char[ sourceLength ];
+	glGetShaderSource( m_glShader, sourceLength, nullptr, m_pSource );
 }
 
 Shader::~Shader()
 {
+	if( m_pSource != nullptr )
+	{
+		delete[] m_pSource;
+	}
 	if( m_glShader != 0 )
 	{
 		glDeleteShader( m_glShader );
@@ -50,11 +68,13 @@ Shader* Shader::fromName( Type type, const char* name )
 	}
 }
 
-Shader* Shader::fromSource( Type type, const char* source )
+Shader* Shader::fromSources( Type type,
+		                     const char* const* sources,
+							 std::size_t numSources )
 {
-	if( source != nullptr )
+	if( sources != nullptr )
 	{
-		return ( new Shader( type, source ) );
+		return ( new Shader( type, sources, numSources ) );
 	}
 	else
 	{

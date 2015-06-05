@@ -124,7 +124,6 @@ bool ShaderProgram::link()
 
 	if( isLinked() )
 	{
-		inspect();
 		extractUniformLocations();
 		return true;
 	}
@@ -234,42 +233,6 @@ void ShaderProgram::extractUniformLocations()
 	}
 
 	printf( "---------------------\n" );
-}
-
-void ShaderProgram::inspect()
-{
-//	char nameBuf[ NAME_SIZE ];
-//
-//	printf( "Inspecting shader %d:\n"
-//			"---------------------\n",
-//			m_glProgram );
-//
-//	GLint numAttributes;
-//	glGetProgramiv( m_glProgram, GL_ACTIVE_ATTRIBUTES, &numAttributes );
-//	GLint numUniforms;
-//	glGetProgramiv( m_glProgram, GL_ACTIVE_UNIFORMS,   &numUniforms   );
-//
-//	for( GLint i = 0; i < numUniforms; ++i )
-//	{
-//		GLint  size;
-//		GLenum type;
-//		glGetActiveUniform(
-//				m_glProgram,
-//				i,
-//				sizeof( nameBuf ),
-//				nullptr,
-//				&size,
-//				&type,
-//				nameBuf );
-//
-//		printf( "Uniform %d:\n"
-//				"  Name: %s\n"
-//				"  Type: %d\n"
-//				"  Size: %d\n",
-//				i, nameBuf, type, size );
-//	}
-//
-//	printf( "---------------------\n" );
 }
 
 }

@@ -6,8 +6,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/ext.hpp>
 #include <SDL2/SDL.h>
-
-#include <type_traits>
+#include <algorithm>
 
 namespace interplot
 {
@@ -33,6 +32,8 @@ SampleScene::SampleScene()
 	bind( Bindings::RenderFill )      = SDL_SCANCODE_F;
 	bind( Bindings::FastForward )     = SDL_SCANCODE_LSHIFT;
 	bind( Bindings::StopTime )        = SDL_SCANCODE_LCTRL;
+	bind( Bindings::IncreasePoints )  = SDL_SCANCODE_PERIOD;
+	bind( Bindings::DecreasePoints )  = SDL_SCANCODE_COMMA;
 }
 
 SampleScene::~SampleScene()
@@ -42,81 +43,6 @@ SampleScene::~SampleScene()
 
 void SampleScene::initialize()
 {
-	/*
-	Vertex points[] = {
-		// floor quad
-		Vertex( -10.0f, -5.0f, -25.0f,   0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f,  0.0f ),
-		Vertex( -10.0f, -5.0f,  25.0f,   0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f,  0.0f ),
-		Vertex(  10.0f, -5.0f,  25.0f,   0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f,  0.0f ),
-		Vertex(  10.0f, -5.0f,  25.0f,   0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f,  0.0f ),
-		Vertex(  10.0f, -5.0f, -25.0f,   0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f,  0.0f ),
-		Vertex( -10.0f, -5.0f, -25.0f,   0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f,  0.0f ),
-
-		// wall triangles
-		Vertex( -10.0f, -5.0f, -25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f,  0.0f ),
-		Vertex( -10.0f,  5.0f,   0.0f,   1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f,  0.0f ),
-		Vertex( -10.0f, -5.0f,  25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f,  0.0f ),
-
-		Vertex( -10.0f, -5.0f,  25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 0.0f, -1.0f ),
-		Vertex(   0.0f,  5.0f,  25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 0.0f, -1.0f ),
-		Vertex(  10.0f, -5.0f,  25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 0.0f, -1.0f ),
-
-		Vertex(  10.0f, -5.0f,  25.0f,   1.0f, 0.0f, 0.0f, 1.0f,   -1.0f, 0.0f,  0.0f ),
-		Vertex(  10.0f,  5.0f,   0.0f,   1.0f, 0.0f, 0.0f, 1.0f,   -1.0f, 0.0f,  0.0f ),
-		Vertex(  10.0f, -5.0f, -25.0f,   1.0f, 0.0f, 0.0f, 1.0f,   -1.0f, 0.0f,  0.0f ),
-
-		Vertex(  10.0f, -5.0f, -25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 0.0f,  1.0f ),
-		Vertex(   0.0f,  5.0f, -25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 0.0f,  1.0f ),
-		Vertex( -10.0f, -5.0f, -25.0f,   1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 0.0f,  1.0f ),
-	};
-
-	m_uiNumVertices = sizeof( points ) / sizeof( Vertex );
-
-	GLuint& vbo = m_glVbo;
-	glGenBuffers( 1, &vbo );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo );
-	glBufferData(
-			GL_ARRAY_BUFFER,
-			sizeof( points ),
-			points,
-			GL_STATIC_DRAW );
-
-	GLuint& vao = m_glVao;
-	glGenVertexArrays( 1, &vao );
-	glBindVertexArray( vao );
-	glEnableVertexAttribArray( 0 );
-	glEnableVertexAttribArray( 1 );
-	glEnableVertexAttribArray( 2 );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo );
-	glVertexAttribPointer(
-			0,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof( Vertex ),
-			vertex_offset( Vertex, pos ) );
-	glVertexAttribPointer( 1,
-			4,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof( Vertex ),
-			vertex_offset( Vertex, color ) );
-	glVertexAttribPointer( 2,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof( Vertex ),
-			vertex_offset( Vertex, normal ) );
-	*/
-
-	m_VertexBuffer.resize( 4 );
-	m_VertexBuffer.allocHostMemory();
-	m_VertexBuffer[ 0 ] = LineVertex( 0.0f, 0.0f );
-	m_VertexBuffer[ 1 ] = LineVertex( 0.0f, 1.0f );
-	m_VertexBuffer[ 2 ] = LineVertex( 1.0f, 1.0f );
-	m_VertexBuffer[ 3 ] = LineVertex( 1.0f, 0.0f );
-	m_VertexBuffer.copyToDevice();
-
 	m_pShaderProgram = engine.shaders.getProgram( "line" );
 
 	m_pActiveCamera->setPosition( glm::vec3( 5.0f, 5.0f, 20.0f ) );
@@ -129,11 +55,9 @@ void SampleScene::update()
 	Camera& cam = *m_pActiveCamera;
 	ftime deltaTime = engine.time.realDelta;
 
-#define IS_PRESSED(bind) ( engine.input.isKeyPressed( bind( Bindings::bind ) ) )
-
 	static const float mouseSens = 0.5f;
 
-	if( is_pressed( Bindings::ResetCamera ) )
+	if( wasBindPressed( Bindings::ResetCamera ) )
 	{
 		cam.setPosition( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 		cam.setOrientation( glm::quat( 1.0f, 0.0f, 0.0f, 0.0f ) );
@@ -157,82 +81,82 @@ void SampleScene::update()
 
 	static const float keyboardMoveSpeed = 5.0f;
 
-	if( is_pressed( Bindings::MoveForward ) )
+	if( isBindDown( Bindings::MoveForward ) )
 	{
 		cam.translate( deltaTime * keyboardMoveSpeed * cam.getForwardVector() );
 	}
-	if( is_pressed( Bindings::MoveBackward ) )
+	if( isBindDown( Bindings::MoveBackward ) )
 	{
 		cam.translate( -deltaTime * keyboardMoveSpeed * cam.getForwardVector() );
 	}
-	if( is_pressed( Bindings::MoveLeft ) )
+	if( isBindDown( Bindings::MoveLeft ) )
 	{
 		cam.translate( -deltaTime * keyboardMoveSpeed * cam.getRightVector() );
 	}
-	if( is_pressed( Bindings::MoveRight ) )
+	if( isBindDown( Bindings::MoveRight ) )
 	{
 		cam.translate( deltaTime * keyboardMoveSpeed * cam.getRightVector() );
 	}
-	if( is_pressed( Bindings::MoveDown ) )
+	if( isBindDown( Bindings::MoveDown ) )
 	{
 		cam.translate( -deltaTime * keyboardMoveSpeed * cam.getUpVector() );
 	}
-	if( is_pressed( Bindings::MoveUp ) )
+	if( isBindDown( Bindings::MoveUp ) )
 	{
 		cam.translate( deltaTime * keyboardMoveSpeed * cam.getUpVector() );
 	}
 
 	static const float keyboardTurnSpeed = 1.0f;
 
-	if( is_pressed( Bindings::TurnUp ) )
+	if( isBindDown( Bindings::TurnUp ) )
 	{
 		cam.rotate( glm::angleAxis(
 					keyboardTurnSpeed * deltaTime,
 					cam.getRightVector() ) );
 	}
-	if( is_pressed( Bindings::TurnDown ) )
+	if( isBindDown( Bindings::TurnDown ) )
 	{
 		cam.rotate( glm::angleAxis(
 					-keyboardTurnSpeed * deltaTime,
 					cam.getRightVector() ) );
 	}
-	if( is_pressed( Bindings::TurnRight ) )
+	if( isBindDown( Bindings::TurnRight ) )
 	{
 		cam.rotate( glm::angleAxis(
 					-keyboardTurnSpeed * deltaTime,
 					cam.getUpVector() ) );
 	}
-	if( is_pressed( Bindings::TurnLeft ) )
+	if( isBindDown( Bindings::TurnLeft ) )
 	{
 		cam.rotate( glm::angleAxis(
 					keyboardTurnSpeed * deltaTime,
 					cam.getUpVector() ) );
 	}
-	if( is_pressed( Bindings::RollCW ) )
+	if( isBindDown( Bindings::RollCW ) )
 	{
 		cam.rotate( glm::angleAxis(
 					keyboardTurnSpeed * deltaTime,
 					cam.getForwardVector() ) );
 	}
-	if( is_pressed( Bindings::RollCCW ) )
+	if( isBindDown( Bindings::RollCCW ) )
 	{
 		cam.rotate( glm::angleAxis(
 					-keyboardTurnSpeed * deltaTime,
 					cam.getForwardVector() ) );
 	}
-	if( is_pressed( Bindings::RenderWireframe ) )
+	if( wasBindPressed( Bindings::RenderWireframe ) )
 	{
 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	}
-	if( is_pressed( Bindings::RenderFill ) )
+	if( wasBindPressed( Bindings::RenderFill ) )
 	{
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	}
-	if( is_pressed( Bindings::StopTime ) )
+	if( isBindDown( Bindings::StopTime ) )
 	{
 		engine.time.scale = 0.0f;
 	}
-	else if( is_pressed( Bindings::FastForward ) )
+	else if( isBindDown( Bindings::FastForward ) )
 	{
 		engine.time.scale = 3.0f;
 	}
@@ -241,7 +165,14 @@ void SampleScene::update()
 		engine.time.scale = 1.0f;
 	}
 
-#undef IS_PRESSED
+	if( wasBindPressed( Bindings::IncreasePoints ) )
+	{
+		m_Line.setNumPoints( std::min( m_Line.getNumPoints() * 2, 2048ul ) );
+	}
+	if( wasBindPressed( Bindings::DecreasePoints ) )
+	{
+		m_Line.setNumPoints( std::max( m_Line.getNumPoints() / 2, 2ul ) );
+	}
 
 	m_Line.update();
 }
@@ -270,21 +201,7 @@ void SampleScene::render()
 			ShaderProgram::Uniform::Time,
 			engine.time.total );
 
-//	m_pShaderProgram->setUniform(
-//			ShaderProgram::Uniform::ModelMatrix,
-//			glm::scale( glm::mat4( 1.0f ), glm::vec3( 1.0f ) ) );
-//	m_pShaderProgram->setUniform(
-//			ShaderProgram::Uniform::ModelNormalMatrix,
-//			glm::mat3( 1.0f ) );
-//
-//	engine.renderer.render( m_VertexBuffer, 0, m_VertexBuffer.size(), 16 );
-
 	m_Line.render();
-}
-
-bool SampleScene::is_pressed( Bindings binding )
-{
-	return engine.input.isKeyPressed( bind( binding ) );
 }
 
 }

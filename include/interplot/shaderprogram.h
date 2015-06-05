@@ -229,8 +229,6 @@ private:
 
 	void extractUniformLocations();
 
-	void inspect();
-
 private:
 	static constexpr int  NAME_SIZE           = 64;
 	static constexpr int  NUM_SHADERS         = 5;

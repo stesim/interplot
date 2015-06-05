@@ -28,6 +28,7 @@ void Engine::initialize()
 void Engine::finalize()
 {
 	renderer.finalize();
+	input.finalize();
 }
 
 void Engine::update()
