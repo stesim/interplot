@@ -7,58 +7,62 @@ namespace interplot
 {
 
 template<typename T>
-class VertexBuffer
+class VertexBuffer : public BufferBase
 {
 public:
 	typedef T VertexType;
 
 public:
-	VertexBuffer()
+	VertexBuffer() :
+		m_uiNumVertices( 0 )
 	{
 	}
-	VertexBuffer( std::size_t size )
+	VertexBuffer( std::size_t size ) :
+		m_uiNumVertices( 0 )
 	{
 		resize( size );
 	}
 
 	void allocHostMemory()
 	{
-		m_BaseBuffer.allocHostMemory();
+		BufferBase::allocHostMemory();
 	}
 
 	void freeHostMemory()
 	{
-		m_BaseBuffer.allocHostMemory();
+		freeHostMemory();
 	}
 
 	void copyToDevice()
 	{
-		m_BaseBuffer.copyToDevice( 0, m_BaseBuffer.size() );
+		BufferBase::copyToDevice();
 	}
 
 	void copyToDevice( std::size_t offset, std::size_t size )
 	{
-		m_BaseBuffer.copyToDevice( offset * sizeof( T ), size * sizeof( T ) );
+		BufferBase::copyToDevice( offset * sizeof( T ), size * sizeof( T ) );
 	}
 
-	std::size_t size() const
+	inline std::size_t numVertices() const
 	{
-		return m_BaseBuffer.size();
+		return m_uiNumVertices;
 	}
 
 	void resize( std::size_t size )
 	{
-		m_BaseBuffer.resize( size * sizeof( T ) );
+		m_uiNumVertices = size;
+
+		BufferBase::resize( size * sizeof( T ) );
 	}
 
 	T& operator[]( std::size_t index )
 	{
-		return reinterpret_cast<T*>( m_BaseBuffer.data() )[ index ];
+		return reinterpret_cast<T*>( BufferBase::data() )[ index ];
 	}
 
 	const T& operator[]( std::size_t index ) const
 	{
-		return reinterpret_cast<T*>( m_BaseBuffer.data() )[ index ];
+		return reinterpret_cast<T*>( BufferBase::data() )[ index ];
 	}
 
 	static const VertexDescriptor& getVertexDescriptor()
@@ -66,13 +70,8 @@ public:
 		return VertexType::layout::descriptor;
 	}
 
-	GLuint getID() const
-	{
-		return m_BaseBuffer.getID();
-	}
-
 private:
-	BufferBase m_BaseBuffer;
+	size_t m_uiNumVertices;
 };
 
 }

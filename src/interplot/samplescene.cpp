@@ -43,11 +43,20 @@ SampleScene::~SampleScene()
 
 void SampleScene::initialize()
 {
-	m_pShaderProgram = engine.shaders.getProgram( "line" );
-
 	m_pActiveCamera->setPosition( glm::vec3( 5.0f, 5.0f, 20.0f ) );
 
+	engine.renderer.bindUniformBuffer(
+			ShaderProgram::UniformBlock::Camera,
+			&m_CameraUniformBuffer );
+
 	m_Line.initialize();
+
+	m_Line.setFunction(
+			"return vec3( x, x * x, 0.0 );",
+			"return normalize( vec3( 1.0, 2.0 * x, 0.0 ) );",
+			"return normalize( vec3( 0.0, 2.0, 0.0 ) );" );
+	m_Line.setParamStart( -1.0f );
+	m_Line.setParamEnd( 1.0f );
 }
 
 void SampleScene::update()
@@ -186,18 +195,15 @@ void SampleScene::render()
 
 	m_pActiveCamera->updateMatrices();
 
-	engine.renderer.setShader( m_pShaderProgram );
+	m_CameraUniformBuffer.set<0>( m_pActiveCamera->getViewMatrix() );
+	m_CameraUniformBuffer.set<1>( m_pActiveCamera->getNormalMatrix() );
+	m_CameraUniformBuffer.set<2>( m_pActiveCamera->getViewProjectionMatrix() );
+	m_CameraUniformBuffer.copyToDevice();
 
-	m_pShaderProgram->setUniform(
-			ShaderProgram::Uniform::ViewMatrix,
-			m_pActiveCamera->getViewMatrix() );
-	m_pShaderProgram->setUniform(
-			ShaderProgram::Uniform::ViewNormalMatrix,
-			m_pActiveCamera->getNormalMatrix() );
-	m_pShaderProgram->setUniform(
-			ShaderProgram::Uniform::ViewProjectionMatrix,
-			m_pActiveCamera->getViewProjectionMatrix() );
-	m_pShaderProgram->setUniform(
+	ShaderProgram* shader = m_Line.getShader();
+	engine.renderer.setShader( shader );
+
+	shader->setUniform(
 			ShaderProgram::Uniform::Time,
 			engine.time.total );
 

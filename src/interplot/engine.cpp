@@ -90,16 +90,16 @@ void Engine::initializeDefaultShaders()
 	vs  = Shader::fromName( Shader::Type::Vertex,                 "line" );
 	fs  = Shader::fromName( Shader::Type::Fragment,               "line" );
 	tcs = Shader::fromName( Shader::Type::TessellationControl,    "line" );
-	tes = Shader::fromName( Shader::Type::TessellationEvaluation, "line" );
+	//tes = Shader::fromName( Shader::Type::TessellationEvaluation, "line" );
 
 	assert( shaders.add( vs,  "line" ) );
 	assert( shaders.add( fs,  "line" ) );
 	assert( shaders.add( tcs, "line" ) );
-	assert( shaders.add( tes, "line" ) );
+	//assert( shaders.add( tes, "line" ) );
 
-	prog = ShaderProgram::assemble( vs, fs, tcs, tes );
+	//prog = ShaderProgram::assemble( vs, fs, tcs, tes );
 
-	assert( shaders.add( prog, "line" ) );
+	//assert( shaders.add( prog, "line" ) );
 }
 
 }

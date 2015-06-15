@@ -10,7 +10,7 @@ constexpr char Shader::NAME_TO_PATH_MASK[];
 Shader::Shader() :
 	m_Type( Type::Vertex ), // random default value
 	m_glShader( 0 ),
-	m_pName( "" ),
+	m_pName(),
 	m_pSource( nullptr ),
 	m_uiSourceLength( 0 ),
 	m_bManaged( false )
@@ -22,7 +22,7 @@ Shader::Shader( Type type,
 				std::size_t numSources ) :
 	m_Type( type ),
 	m_glShader( 0 ),
-	m_pName( "" ),
+	m_pName(),
 	m_pSource( nullptr ),
 	m_uiSourceLength( 0 ),
 	m_bManaged( false )

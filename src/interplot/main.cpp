@@ -9,9 +9,11 @@
 #include <cmath>
 #include "samplescene.h"
 #include "image.h"
+#include "uniformbuffer.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <iostream>
 
 using namespace interplot;
 

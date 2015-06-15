@@ -42,6 +42,8 @@ void BufferBase::freeHostMemory()
 
 void BufferBase::copyToDevice( std::size_t offset, std::size_t size )
 {
+	assert( m_pData != nullptr && offset + size <= m_Size );
+
 	if( m_DeviceSize < offset + size )
 	{
 		resizeDevice();
@@ -63,6 +65,14 @@ void BufferBase::resize( std::size_t size )
 
 		m_Size = size;
 	}
+}
+
+void BufferBase::setAccessUsage( Access access, Usage usage )
+{
+	m_Access = access;
+	m_Usage  = usage;
+
+	resizeDevice();
 }
 
 GLenum BufferBase::toGlUsage( Access access, Usage usage )
@@ -100,13 +110,19 @@ GLenum BufferBase::toGlUsage( Access access, Usage usage )
 					return GL_STREAM_COPY;
 			}
 	}
+
+	assert( false );
+	return GL_STATIC_DRAW;
 }
 
 void BufferBase::resizeDevice()
 {
 	m_DeviceSize = m_Size;
 	glNamedBufferData(
-			m_glVbo, m_DeviceSize, nullptr, toGlUsage( m_Access, m_Usage ) );
+			m_glVbo,
+			m_DeviceSize,
+			nullptr,
+			toGlUsage( m_Access, m_Usage ) );
 }
 
 }

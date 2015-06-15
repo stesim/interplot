@@ -7,6 +7,7 @@
 #include "vertexbuffer.h"
 #include "linevisual.h"
 #include "engine.h"
+#include "uniformbuffer.h"
 
 namespace interplot
 {
@@ -70,7 +71,7 @@ private:
 private:
 	uint8_t m_KeyBindings[ static_cast<int>( Bindings::COUNT ) ];
 
-	ShaderProgram* m_pShaderProgram;
+	UniformBuffer<mat4, mat3, mat4> m_CameraUniformBuffer;
 
 	LineVisual m_Line;
 };

@@ -4,24 +4,33 @@
 namespace interplot
 {
 
-constexpr char ShaderProgram::UNIFORM_NAMES[][ NAME_SIZE ];
+constexpr char ShaderProgram::UNIFORM_NAMES      [][ NAME_SIZE ];
+constexpr char ShaderProgram::UNIFORM_BLOCK_NAMES[][ NAME_SIZE ];
 
 std::unordered_map<std::string, ShaderProgram::Uniform>
 	ShaderProgram::s_mapNameToUniform;
+std::unordered_map<std::string, ShaderProgram::UniformBlock>
+	ShaderProgram::s_mapNameToUniformBlock;
 
 ShaderProgram::StaticInitializer ShaderProgram::s_Initializer;
 
 ShaderProgram::StaticInitializer::StaticInitializer()
 {
-	for( int i = 0; i < enum_cast( Uniform::Custom ); ++i )
+	for( int i = 0; i < enum_cast( Uniform::Count ); ++i )
 	{
 		s_mapNameToUniform[ UNIFORM_NAMES[ i ] ] = enum_cast<Uniform>( i );
+	}
+
+	for( int i = 0; i < enum_cast( UniformBlock::Count ); ++i )
+	{
+		s_mapNameToUniformBlock[ UNIFORM_BLOCK_NAMES[ i ] ] =
+			enum_cast<UniformBlock>( i );
 	}
 }
 
 ShaderProgram::ShaderProgram()
 	: m_glProgram( 0 ),
-	m_pName( "" ),
+	m_pName(),
 	m_bManaged( false ),
 	m_pVertexShader( nullptr ),
 	m_pTessControlShader( nullptr ),
@@ -29,9 +38,11 @@ ShaderProgram::ShaderProgram()
 	m_pGeometryShader( nullptr ),
 	m_pFragmentShader( nullptr )
 {
+	std::fill_n( m_UniformLocations, enum_cast( Uniform::Count ), -1 );
+
 	std::fill_n(
-			m_UniformLocations,
-			sizeof( m_UniformLocations ) / sizeof( int ),
+			m_UniformBlockLocations,
+			enum_cast( UniformBlock::Count ),
 			-1 );
 }
 
@@ -145,6 +156,15 @@ void ShaderProgram::getLinkLog(
 	}
 }
 
+void ShaderProgram::setCustomUniformBlockBinding(
+		const char* name, GLuint binding )
+{
+	assert( binding >= NUM_RESERVED_BLOCKS );
+
+	GLuint index = glGetUniformBlockIndex( m_glProgram, name );
+	glUniformBlockBinding( m_glProgram, index, binding );
+}
+
 ShaderProgram::Uniform ShaderProgram::nameToUniform( const char* name )
 {
 	auto iter = s_mapNameToUniform.find( name );
@@ -161,9 +181,36 @@ ShaderProgram::Uniform ShaderProgram::nameToUniform( const char* name )
 const char* ShaderProgram::uniformToName( Uniform uniform )
 {
 	auto index = enum_cast( uniform );
-	if( index < enum_cast( Uniform::Custom ) )
+	if( index < enum_cast( Uniform::Count ) )
 	{
 		return UNIFORM_NAMES[ index ];
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+ShaderProgram::UniformBlock ShaderProgram::nameToUniformBlock(
+		const char* name )
+{
+	auto iter = s_mapNameToUniformBlock.find( name );
+	if( iter != s_mapNameToUniformBlock.end() )
+	{
+		return iter->second;
+	}
+	else
+	{
+		return UniformBlock::Custom;
+	}
+}
+
+const char* ShaderProgram::uniformBlockToName( UniformBlock block )
+{
+	auto index = enum_cast( block );
+	if( index < enum_cast( UniformBlock::Count ) )
+	{
+		return UNIFORM_BLOCK_NAMES[ index ];
 	}
 	else
 	{
@@ -200,20 +247,25 @@ void ShaderProgram::extractUniformLocations()
 		{
 			m_UniformLocations[ enum_cast( uniformType ) ] = i;
 		}
-		else
-		{
-			dbg_printf(
-					"Custom uniform discovered (shader : %d): %s\n",
-					m_glProgram, nameBuf );
-		}
 
-		printf( "Uniform %d:\n"
-				"  Name: %s\n"
+		printf( "Uniform %d: %s\n"
 				"  Type: %d\n"
 				"  Size: %d\n",
 				i, nameBuf, type, size );
 	}
 
+	static const GLenum activeVariablesProp  = GL_NUM_ACTIVE_VARIABLES;
+	static const GLenum blockSizeProp        = GL_BUFFER_DATA_SIZE;
+	static const GLenum activeIndicesProp    = GL_ACTIVE_VARIABLES;
+	static const size_t MAX_ACTIVE_VARIABLES = 16; // TODO: remove?
+	static const size_t NUM_OUTPUT_PROPS     = 3;
+	static const GLenum outputProps[ NUM_OUTPUT_PROPS ] = {
+		GL_TYPE,
+		GL_OFFSET,
+		GL_MATRIX_STRIDE,
+	};
+
+	// get number of uniform blocks
 	GLint numUniformBlocks;
 	glGetProgramInterfaceiv(
 			m_glProgram,
@@ -223,6 +275,7 @@ void ShaderProgram::extractUniformLocations()
 
 	for( GLint i = 0; i < numUniformBlocks; ++i )
 	{
+		// get block name
 		glGetProgramResourceName(
 				m_glProgram,
 				GL_UNIFORM_BLOCK,
@@ -230,6 +283,90 @@ void ShaderProgram::extractUniformLocations()
 				NAME_SIZE,
 				nullptr,
 				nameBuf );
+
+		UniformBlock blockType = nameToUniformBlock( nameBuf );
+		if( blockType != UniformBlock::Custom )
+		{
+			m_UniformBlockLocations[ enum_cast( blockType ) ] = i;
+
+			glUniformBlockBinding( m_glProgram, i, enum_cast( blockType ) );
+		}
+
+		// get number of active variables
+		GLint activeVariables;
+		glGetProgramResourceiv(
+				m_glProgram,
+				GL_UNIFORM_BLOCK,
+				i,
+				1,
+				&activeVariablesProp,
+				1,
+				nullptr,
+				&activeVariables );
+
+		// get required buffer size
+		GLint blockSize;
+		glGetProgramResourceiv(
+				m_glProgram,
+				GL_UNIFORM_BLOCK,
+				i,
+				1,
+				&blockSizeProp,
+				1,
+				nullptr,
+				&blockSize );
+
+		printf( "Uniform Block %d:\n"
+				"  Name:      %s\n"
+				"  Size:      %d\n"
+				"  Variables: %d\n",
+				i, nameBuf, blockSize, activeVariables );
+
+		GLint variableIndices[ MAX_ACTIVE_VARIABLES ];
+		assert( activeVariables < MAX_ACTIVE_VARIABLES );
+
+		// get indices of active variables
+		glGetProgramResourceiv(
+				m_glProgram,
+				GL_UNIFORM_BLOCK,
+				i,
+				1,
+				&activeIndicesProp,
+				MAX_ACTIVE_VARIABLES,
+				nullptr,
+				variableIndices );
+
+		for( GLint j = 0; j < activeVariables; ++j )
+		{
+			// get name of variable
+			glGetProgramResourceName(
+					m_glProgram,
+					GL_UNIFORM,
+					variableIndices[ j ],
+					NAME_SIZE,
+					nullptr,
+					nameBuf );
+
+			GLint outputPropValues[ NUM_OUTPUT_PROPS ];
+			glGetProgramResourceiv(
+					m_glProgram,
+					GL_UNIFORM,
+					variableIndices[ j ],
+					NUM_OUTPUT_PROPS,
+					outputProps,
+					NUM_OUTPUT_PROPS,
+					nullptr,
+					outputPropValues );
+
+			printf( "    Variable %d: %s\n"
+					"      Type:     %d\n"
+					"      Offset:   %d\n"
+					"      M-Stride: %d\n",
+					j, nameBuf,
+					outputPropValues[ 0 ],
+					outputPropValues[ 1 ],
+					outputPropValues[ 2 ] );
+		}
 	}
 
 	printf( "---------------------\n" );

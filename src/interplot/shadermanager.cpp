@@ -94,6 +94,9 @@ int ShaderManager::shaderMapIndex( Shader::Type type )
 		return 3;
 	case Shader::Type::Fragment:
 		return 4;
+	default:
+		assert( false );
+		return -1;
 	}
 }
 

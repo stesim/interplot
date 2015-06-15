@@ -28,14 +28,15 @@ public:
 		ModelMatrix,
 		ModelNormalMatrix,
 		Time,
-		Custom,
 		Count,
+		Custom,
 	};
 
 	enum class UniformBlock
 	{
 		Camera,
 		Model,
+		Count,
 		Custom
 	};
 
@@ -49,6 +50,12 @@ private:
 	};
 
 public:
+	ShaderProgram( const ShaderProgram& ) = delete;
+	ShaderProgram( const ShaderProgram&& ) = delete;
+
+	ShaderProgram& operator=( const ShaderProgram& ) = delete;
+	ShaderProgram& operator=( const ShaderProgram&& ) = delete;
+
 	static ShaderProgram* assemble(
 			Shader* shader1,
 			Shader* shader2,
@@ -167,7 +174,7 @@ public:
 		CustomUniform res = glGetUniformLocation( m_glProgram, name );
 		if( res < 0 )
 		{
-			dbg_printf( "Shader %d variable '%s' is not active "
+			dbg_printf( "Shader %d uniform '%s' is not active "
 					"or does not exist.\n", m_glProgram, name );
 		}
 		return res;
@@ -207,6 +214,8 @@ public:
 				m_glProgram, uniform, 1, GL_FALSE, glm::value_ptr( mat ) );
 	}
 
+	void setCustomUniformBlockBinding( const char* name, GLuint binding );
+
 private:
 	ShaderProgram();
 	~ShaderProgram();
@@ -227,11 +236,16 @@ private:
 
 	inline static const char* uniformToName( Uniform uniform );
 
+	inline static UniformBlock nameToUniformBlock( const char* name );
+
+	inline static const char*  uniformBlockToName( UniformBlock block );
+
 	void extractUniformLocations();
 
 private:
-	static constexpr int  NAME_SIZE           = 64;
-	static constexpr int  NUM_SHADERS         = 5;
+	static constexpr size_t  NAME_SIZE           = 64;
+	static constexpr size_t  NUM_SHADERS         = 5;
+	static constexpr size_t  NUM_RESERVED_BLOCKS = 16;
 
 	static constexpr char UNIFORM_NAMES[][ NAME_SIZE ] = {
 		"mat_view",               // view matrix
@@ -242,9 +256,22 @@ private:
 		"mat_model_normal",       // model normal matrix
 		"f_time",                 // virtual time as float
 	};
+	static_assert(
+			sizeof( UNIFORM_NAMES ) / NAME_SIZE == enum_cast( Uniform::Count ),
+			"Invalid number of uniform names." );
 
-	static std::unordered_map<std::string, Uniform> s_mapNameToUniform;
-	static StaticInitializer                        s_Initializer;
+	static constexpr char UNIFORM_BLOCK_NAMES[][ NAME_SIZE ] = {
+		"CameraUniforms",         // camera properties
+		"ModelUniforms",          // model data
+	};
+	static_assert(
+			sizeof( UNIFORM_BLOCK_NAMES ) / NAME_SIZE ==
+				enum_cast( UniformBlock::Count ),
+			"Invalid number of uniform block names." );
+
+	static std::unordered_map<std::string, UniformBlock> s_mapNameToUniformBlock;
+	static std::unordered_map<std::string, Uniform>      s_mapNameToUniform;
+	static StaticInitializer                             s_Initializer;
 
 	GLuint  m_glProgram;
 	char    m_pName[ NAME_SIZE ];
@@ -256,7 +283,8 @@ private:
 	Shader* m_pGeometryShader;
 	Shader* m_pFragmentShader;
 
-	int     m_UniformLocations[ enum_cast( Uniform::Count ) ];
+	int     m_UniformLocations     [ enum_cast( Uniform::Count ) ];
+	int     m_UniformBlockLocations[ enum_cast( UniformBlock::Count ) ];
 };
 
 
