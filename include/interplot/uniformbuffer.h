@@ -12,10 +12,15 @@ namespace interplot
 namespace internal
 {
 
-template<size_t Index, typename... T>
-constexpr size_t ub_member_offset()
+namespace uniform_buffer
 {
-	return utils::SumConstrained<Index, sizeof_std140<T>()...>::value;
+
+template<size_t Index, typename... T>
+inline constexpr size_t member_offset()
+{
+	return utils::SumConstrained<Index, std140_sizeof<T>()...>::value;
+}
+
 }
 
 }
@@ -40,31 +45,19 @@ public:
 	{
 	}
 
-//	template<size_t Index>
-//	ParamType<Index>& member()
-//	{
-//		return *reinterpret_cast<ParamType<Index>*>(
-//				reinterpret_cast<char*>( data() ) +
-//				internal::ub_member_offset<Index, T...>() );
-//	}
-
 	template<size_t Index>
 	const ParamType<Index>& get() const
 	{
 		return *reinterpret_cast<ParamType<Index>*>(
 				reinterpret_cast<char*>( data() ) +
-				internal::ub_member_offset<Index, T...>() );
+				internal::uniform_buffer::member_offset<Index, T...>() );
 	}
 
 	template<size_t Index>
 	void set( const ParamType<Index>& value )
 	{
-//		*reinterpret_cast<ParamType<Index>*>(
-//				reinterpret_cast<char*>( data() ) +
-//				internal::ub_member_offset<Index, T...>() ) = value;
-
-		copy_std140( reinterpret_cast<char*>( data() )
-				+ internal::ub_member_offset<Index, T...>(), value );
+		std140_copy( reinterpret_cast<char*>( data() ) +
+				internal::uniform_buffer::member_offset<Index, T...>(), value );
 	}
 
 	void copyToDevice()
@@ -73,8 +66,7 @@ public:
 	}
 
 private:
-	//static constexpr size_t ALIGNMENT = utils::Max<alignof( T )...>::value;
-	static constexpr size_t SIZE = utils::Sum<sizeof_std140<T>()...>::value;
+	static constexpr size_t SIZE = utils::Sum<std140_sizeof<T>()...>::value;
 };
 
 }

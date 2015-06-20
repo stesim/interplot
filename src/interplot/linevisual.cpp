@@ -62,7 +62,7 @@ void LineVisual::initialize()
 
 	setFunction(
 			"return vec3( 10.0 * x, 2.0 * sin( 1.0 * f_time + PERIODS * x * TWO_PI ), 2.0 * cos( 1.0 * f_time + PERIODS * x * TWO_PI ) ) + vec3( 0.0, 0.0, y );",
-			"return vec3( 10.0, 2.0 * PERIODS * TWO_PI * cos( 1.0 * f_time + PERIODS * x * TWO_PI ), -2.0 * PERIODS * TWO_PI * sin( 1.0 * f_time + PERIODS * x * TWO_PI ) );",
+			"return normalize( vec3( 10.0, 2.0 * PERIODS * TWO_PI * cos( 1.0 * f_time + PERIODS * x * TWO_PI ), -2.0 * PERIODS * TWO_PI * sin( 1.0 * f_time + PERIODS * x * TWO_PI ) ) );",
 			"return normalize( vec3( 0.0, -4.0 * PI_SQR * 2.0 * sin( f_time + PERIODS * x * TWO_PI ), -4 * PI_SQR * 2.0 * cos( f_time + PERIODS * x * TWO_PI ) ) );" );
 }
 

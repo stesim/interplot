@@ -51,12 +51,14 @@ void SampleScene::initialize()
 
 	m_Line.initialize();
 
+	/*
 	m_Line.setFunction(
 			"return vec3( x, x * x, 0.0 );",
 			"return normalize( vec3( 1.0, 2.0 * x, 0.0 ) );",
 			"return normalize( vec3( 0.0, 2.0, 0.0 ) );" );
 	m_Line.setParamStart( -1.0f );
 	m_Line.setParamEnd( 1.0f );
+	*/
 }
 
 void SampleScene::update()

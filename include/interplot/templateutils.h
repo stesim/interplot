@@ -8,6 +8,37 @@ namespace interplot
 namespace utils
 {
 
+template<size_t... I>
+struct Indices
+{
+};
+
+template<size_t N, size_t... I>
+struct make_indices : make_indices<N - 1, N - 1, I...>
+{
+};
+
+template<size_t... I>
+struct make_indices<0, I...> : Indices<I...>
+{
+};
+
+template<typename T, size_t N>
+struct Storage
+{
+	T values[ N ];
+
+	constexpr const T& operator[]( size_t index ) const
+	{
+		return values[ index ];
+	}
+
+	T& operator[]( size_t index )
+	{
+		return values[ index ];
+	}
+};
+
 template<typename... T>
 struct TypePack
 {

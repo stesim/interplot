@@ -7,6 +7,7 @@
 #include <glm/vec3.hpp>
 
 #include "enum.h"              // useful enum class functionality
+#include "linalg.h"
 
 namespace interplot
 {
