@@ -123,16 +123,6 @@ void LineVisual::setFunction( const char* function,
 	}
 
 	std::string source =
-		"#version 420\n"
-		"uniform float f_time;\n"
-		"#define t f_time;\n"
-		"\n"
-		"const float PI     = 3.14159265359;\n"
-		"const float TWO_PI = 6.28318530718;\n"
-		"const float PI_SQR = 9.86960440109; \n"
-		"\n"
-		"const float PERIODS = 4.0;\n"
-		"\n"
 		"vec3 fun( float x, float y )\n"
 		"{\n";
 
@@ -157,7 +147,8 @@ void LineVisual::setFunction( const char* function,
 	source += "\n"
 		"}\n";
 
-	const char* sources[] = { source.c_str(), m_pTessEvalShader->getSource() };
+	//const char* sources[] = { source.c_str(), m_pTessEvalShader->getSource() };
+	const char* sources[] = { m_pTessEvalShader->getSource(), source.c_str() };
 
 	Shader* tesShader = Shader::fromSources(
 			Shader::Type::TessellationEvaluation,

@@ -220,9 +220,9 @@ const char* ShaderProgram::uniformBlockToName( UniformBlock block )
 
 void ShaderProgram::extractUniformLocations()
 {
-	printf( "Inspecting shader %d:\n"
-			"---------------------\n",
-			m_glProgram );
+//	printf( "Inspecting shader %d:\n"
+//			"---------------------\n",
+//			m_glProgram );
 
 	char nameBuf[ NAME_SIZE ];
 
@@ -248,10 +248,10 @@ void ShaderProgram::extractUniformLocations()
 			m_UniformLocations[ enum_cast( uniformType ) ] = i;
 		}
 
-		printf( "Uniform %d: %s\n"
-				"  Type: %d\n"
-				"  Size: %d\n",
-				i, nameBuf, type, size );
+//		printf( "Uniform %d: %s\n"
+//				"  Type: %d\n"
+//				"  Size: %d\n",
+//				i, nameBuf, type, size );
 	}
 
 	static const GLenum activeVariablesProp  = GL_NUM_ACTIVE_VARIABLES;
@@ -316,11 +316,11 @@ void ShaderProgram::extractUniformLocations()
 				nullptr,
 				&blockSize );
 
-		printf( "Uniform Block %d:\n"
-				"  Name:      %s\n"
-				"  Size:      %d\n"
-				"  Variables: %d\n",
-				i, nameBuf, blockSize, activeVariables );
+//		printf( "Uniform Block %d:\n"
+//				"  Name:      %s\n"
+//				"  Size:      %d\n"
+//				"  Variables: %d\n",
+//				i, nameBuf, blockSize, activeVariables );
 
 		GLint variableIndices[ MAX_ACTIVE_VARIABLES ];
 		assert( activeVariables < MAX_ACTIVE_VARIABLES );
@@ -358,18 +358,18 @@ void ShaderProgram::extractUniformLocations()
 					nullptr,
 					outputPropValues );
 
-			printf( "    Variable %d: %s\n"
-					"      Type:     %d\n"
-					"      Offset:   %d\n"
-					"      M-Stride: %d\n",
-					j, nameBuf,
-					outputPropValues[ 0 ],
-					outputPropValues[ 1 ],
-					outputPropValues[ 2 ] );
+//			printf( "    Variable %d: %s\n"
+//					"      Type:     %d\n"
+//					"      Offset:   %d\n"
+//					"      M-Stride: %d\n",
+//					j, nameBuf,
+//					outputPropValues[ 0 ],
+//					outputPropValues[ 1 ],
+//					outputPropValues[ 2 ] );
 		}
 	}
 
-	printf( "---------------------\n" );
+//	printf( "---------------------\n" );
 }
 
 }

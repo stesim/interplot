@@ -7,7 +7,6 @@
 #include <glm/fwd.hpp>
 #include <glm/ext.hpp>
 #include <unordered_map>
-#include "glutils.h"
 
 #include <type_traits>
 

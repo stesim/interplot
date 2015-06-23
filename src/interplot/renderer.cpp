@@ -44,6 +44,8 @@ void Renderer::setShader( ShaderProgram* shader )
 
 void Renderer::setVertexLayout( const VertexDescriptor* desc )
 {
+	using namespace internal::glsl_types;
+
 	if( desc != m_pVertexDescriptor )
 	{
 		GLuint oldNumAttr =
@@ -65,37 +67,32 @@ void Renderer::setVertexLayout( const VertexDescriptor* desc )
 		}
 
 		GLuint offset = 0;
+		// no segfault for desc = nullptr since newNumAttr = 0
 		for( GLuint i = 0; i < newNumAttr; ++i )
 		{
-			// no segfault for desc = nullptr since newNumAttr = 0
-			switch( desc->type[ i ] )
+			const TypeDesc& glslDesc = glsl_type_desc( desc->type[ i ] );
+			switch( glslDesc.comp_id )
 			{
-				case VertexDescriptor::ComponentType::Float:
+				case GLSLType::Float:
 					glVertexAttribFormat(
 							i,
-							desc->components[ i ],
+							glslDesc.rows * glslDesc.columns,
 							GL_FLOAT,
 							GL_FALSE,
 							offset );
-					offset += desc->components[ i ] * sizeof( GLfloat );
 					break;
-				case VertexDescriptor::ComponentType::Int:
+				case GLSLType::Int:
 					glVertexAttribIFormat(
 							i,
-							desc->components[ i ],
+							glslDesc.rows,
 							GL_INT,
 							offset );
-					offset += desc->components[ i ] * sizeof( GLint );
 					break;
-				case VertexDescriptor::ComponentType::Byte:
-					glVertexAttribIFormat(
-							i,
-							desc->components[ i ],
-							GL_BYTE,
-							offset );
-					offset += desc->components[ i ] * sizeof( GLbyte );
+				default:
+					assert( false );
 					break;
 			}
+			offset += glslDesc.size;
 		}
 
 		m_pVertexDescriptor = desc;
