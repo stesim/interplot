@@ -123,7 +123,7 @@ public:
 		glProgramUniform1f(
 				m_glProgram, m_UniformLocations[ enum_cast( type ) ], val );
 	}
-	inline void setUniform( Uniform type, const glm::vec2& vec )
+	inline void setUniform( Uniform type, const vec2& vec )
 	{
 		glProgramUniform2fv(
 				m_glProgram,
@@ -131,7 +131,7 @@ public:
 				1,
 				glm::value_ptr( vec ) );
 	}
-	inline void setUniform( Uniform type, const glm::vec3& vec )
+	inline void setUniform( Uniform type, const vec3& vec )
 	{
 		glProgramUniform3fv(
 				m_glProgram,
@@ -139,7 +139,7 @@ public:
 				1,
 				glm::value_ptr( vec ) );
 	}
-	inline void setUniform( Uniform type, const glm::vec4& vec )
+	inline void setUniform( Uniform type, const vec4& vec )
 	{
 		glProgramUniform4fv(
 				m_glProgram,
@@ -147,7 +147,7 @@ public:
 				1,
 				glm::value_ptr( vec ) );
 	}
-	inline void setUniform( Uniform type, const glm::mat3& mat )
+	inline void setUniform( Uniform type, const mat3& mat )
 	{
 		glProgramUniformMatrix3fv(
 				m_glProgram,
@@ -156,7 +156,7 @@ public:
 				GL_FALSE,
 				glm::value_ptr( mat ) );
 	}
-	inline void setUniform( Uniform type, const glm::mat4& mat )
+	inline void setUniform( Uniform type, const mat4& mat )
 	{
 		glProgramUniformMatrix4fv(
 				m_glProgram,
@@ -190,24 +190,28 @@ public:
 	{
 		glProgramUniform1ui( m_glProgram, uniform, val );
 	}
-	inline void setCustomUniform( CustomUniform uniform, const glm::vec2& vec )
+	inline void setCustomUniform( CustomUniform uniform, const vec2& vec )
 	{
 		glProgramUniform2fv( m_glProgram, uniform, 1, glm::value_ptr( vec ) );
 	}
-	inline void setCustomUniform( CustomUniform uniform, const glm::vec3& vec )
+	inline void setCustomUniform( CustomUniform uniform, const uvec2& vec )
+	{
+		glProgramUniform2uiv( m_glProgram, uniform, 1, glm::value_ptr( vec ) );
+	}
+	inline void setCustomUniform( CustomUniform uniform, const vec3& vec )
 	{
 		glProgramUniform3fv( m_glProgram, uniform, 1, glm::value_ptr( vec ) );
 	}
-	inline void setCustomUniform( CustomUniform uniform, const glm::vec4& vec )
+	inline void setCustomUniform( CustomUniform uniform, const vec4& vec )
 	{
 		glProgramUniform4fv( m_glProgram, uniform, 1, glm::value_ptr( vec ) );
 	}
-	inline void setCustomUniform( CustomUniform uniform, const glm::mat3& mat )
+	inline void setCustomUniform( CustomUniform uniform, const mat3& mat )
 	{
 		glProgramUniformMatrix3fv(
 				m_glProgram, uniform, 1, GL_FALSE, glm::value_ptr( mat ) );
 	}
-	inline void setCustomUniform( CustomUniform uniform, const glm::mat4& mat )
+	inline void setCustomUniform( CustomUniform uniform, const mat4& mat )
 	{
 		glProgramUniformMatrix4fv(
 				m_glProgram, uniform, 1, GL_FALSE, glm::value_ptr( mat ) );

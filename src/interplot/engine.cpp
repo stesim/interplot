@@ -100,6 +100,10 @@ void Engine::initializeDefaultShaders()
 	//prog = ShaderProgram::assemble( vs, fs, tcs, tes );
 
 	//assert( shaders.add( prog, "line" ) );
+
+	tcs = Shader::fromName( Shader::Type::TessellationControl, "surface" );
+
+	assert( shaders.add( tcs, "surface" ) );
 }
 
 }

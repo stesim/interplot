@@ -3,6 +3,7 @@
 #include "vertexbuffer.h"
 #include "shaderprogram.h"
 #include "uniformbuffer.h"
+#include "gpufunctionsource.h"
 
 namespace interplot
 {
@@ -54,18 +55,11 @@ public:
 	}
 	void setLineDistance( float distance );
 
-	void setFunction( const char* function,
-	                  const char* gradient,
-	                  const char* normal );
-
-	inline void getFunction( const char*& function,
-	                         const char*& gradient,
-	                         const char*& normal )
+	const GpuFunctionSource& getFunction() const
 	{
-		function = m_pFunctionString;
-		gradient = m_pGradientString;
-		normal   = m_pNormalString;
+		return m_Function;
 	}
+	void setFunction( const GpuFunctionSource& func );
 
 	inline float getParamStart() const
 	{
@@ -112,9 +106,8 @@ private:
 	float       m_fRadius;
 	std::size_t m_uiNumLines;
 	float       m_fLineDistance;
-	char*       m_pFunctionString;
-	char*       m_pGradientString;
-	char*       m_pNormalString;
+
+	GpuFunctionSource m_Function;
 };
 
 }

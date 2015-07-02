@@ -51,14 +51,13 @@ void SampleScene::initialize()
 
 	m_Line.initialize();
 
-	/*
-	m_Line.setFunction(
-			"return vec3( x, x * x, 0.0 );",
-			"return normalize( vec3( 1.0, 2.0 * x, 0.0 ) );",
-			"return normalize( vec3( 0.0, 2.0, 0.0 ) );" );
-	m_Line.setParamStart( -1.0f );
-	m_Line.setParamEnd( 1.0f );
-	*/
+//	m_Line.setFunction( GpuFunctionSource( 2, 3,
+//				"return vec3( x, x * x * sin( 2.0 * t ), 0.0 );" ) );
+//	m_Line.setParamStart( -1.0f );
+//	m_Line.setParamEnd( 1.0f );
+
+	m_Surface.initialize();
+	m_Surface.setNumPoints( uvec2( 64, 4 ) );
 }
 
 void SampleScene::update()
@@ -179,13 +178,25 @@ void SampleScene::update()
 	if( wasBindPressed( Bindings::IncreasePoints ) )
 	{
 		m_Line.setNumPoints( std::min( m_Line.getNumPoints() * 2, 2048ul ) );
+		uvec2 numPoints = m_Surface.getNumPoints();
+		if( std::max( numPoints.x, numPoints.y ) < 2048 )
+		{
+			m_Surface.setNumPoints( 2 * numPoints );
+		}
 	}
 	if( wasBindPressed( Bindings::DecreasePoints ) )
 	{
 		m_Line.setNumPoints( std::max( m_Line.getNumPoints() / 2, 2ul ) );
+		uvec2 numPoints = m_Surface.getNumPoints();
+		if( std::min( numPoints.x, numPoints.y ) > 2 )
+		{
+			m_Surface.setNumPoints( numPoints / 2 );
+		}
 	}
 
 	m_Line.update();
+
+	m_Surface.update();
 }
 
 void SampleScene::render()
@@ -202,6 +213,7 @@ void SampleScene::render()
 	m_CameraUniformBuffer.set<2>( m_pActiveCamera->getViewProjectionMatrix() );
 	m_CameraUniformBuffer.copyToDevice();
 
+
 	ShaderProgram* shader = m_Line.getShader();
 	engine.renderer.setShader( shader );
 
@@ -210,6 +222,16 @@ void SampleScene::render()
 			engine.time.total );
 
 	m_Line.render();
+
+
+	shader = m_Surface.getShader();
+	engine.renderer.setShader( shader );
+
+	shader->setUniform(
+			ShaderProgram::Uniform::Time,
+			engine.time.total );
+
+	m_Surface.render();
 }
 
 }

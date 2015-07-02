@@ -26,10 +26,7 @@ LineVisual::LineVisual() :
 	m_uiNumFaces( 16 ),
 	m_fRadius( 0.05f ),
 	m_uiNumLines( 1 ),
-	m_fLineDistance( 1.0f ),
-	m_pFunctionString( nullptr ),
-	m_pGradientString( nullptr ),
-	m_pNormalString( nullptr )
+	m_fLineDistance( 1.0f )
 {
 }
 
@@ -60,10 +57,8 @@ void LineVisual::initialize()
 	m_pFragmentShader =
 		shaders.getShader<Shader::Type::Fragment>( "line" );
 
-	setFunction(
-			"return vec3( 10.0 * x, 2.0 * sin( 1.0 * f_time + PERIODS * x * TWO_PI ), 2.0 * cos( 1.0 * f_time + PERIODS * x * TWO_PI ) ) + vec3( 0.0, 0.0, y );",
-			"return normalize( vec3( 10.0, 2.0 * PERIODS * TWO_PI * cos( 1.0 * f_time + PERIODS * x * TWO_PI ), -2.0 * PERIODS * TWO_PI * sin( 1.0 * f_time + PERIODS * x * TWO_PI ) ) );",
-			"return normalize( vec3( 0.0, -4.0 * PI_SQR * 2.0 * sin( f_time + PERIODS * x * TWO_PI ), -4 * PI_SQR * 2.0 * cos( f_time + PERIODS * x * TWO_PI ) ) );" );
+	setFunction( GpuFunctionSource( 2, 3,
+				"return vec3( 10.0 * x, 2.0 * 2.0 * sin( 1.0 * f_time + PERIODS * x * TWO_PI ), 2.0 * 2.0 * cos( 1.0 * f_time + PERIODS * x * TWO_PI ) ) + vec3( 0.0, 0.0, y );" ) );
 }
 
 void LineVisual::finalize()
@@ -111,43 +106,23 @@ void LineVisual::setLineDistance( float distance )
 			m_uniLineDistance, m_fLineDistance );
 }
 
-void LineVisual::setFunction( const char* function,
-		                      const char* gradient,
-							  const char* normal )
+void LineVisual::setFunction( const GpuFunctionSource& func )
 {
-	if( function == nullptr ||
-			gradient == nullptr ||
-			normal == nullptr )
+	if( ( func.getDomainDim() != 2 && func.getDomainDim() != 3 ) ||
+			func.getImageDim() != 3 )
 	{
 		return;
 	}
 
+	m_Function = func;
+
 	std::string source =
 		"vec3 fun( float x, float y )\n"
 		"{\n";
-
-	source += function;
-
-	source += "\n"
-		"}\n"
-		"\n"
-		"vec3 fun_grad( float x, float y )\n"
-		"{\n";
-
-	source += gradient;
-
-	source += "\n"
-		"}\n"
-		"\n"
-		"vec3 fun_normal( float x, float y )\n"
-		"{\n";
-
-	source += normal;
-
+	source += m_Function.getFunctionSource();
 	source += "\n"
 		"}\n";
 
-	//const char* sources[] = { source.c_str(), m_pTessEvalShader->getSource() };
 	const char* sources[] = { m_pTessEvalShader->getSource(), source.c_str() };
 
 	Shader* tesShader = Shader::fromSources(
@@ -185,8 +160,8 @@ void LineVisual::setFunction( const char* function,
 
 	m_pShaderProgram->setCustomUniform( m_uniParamStart,   m_fParamStart );
 	m_pShaderProgram->setCustomUniform( m_uniParamEnd,     m_fParamEnd );
-	m_pShaderProgram->setCustomUniform(
-			m_uniTubeFaces,    (GLuint)m_uiNumFaces );
+	m_pShaderProgram->setCustomUniform( m_uniTubeFaces,
+			                            (GLuint)m_uiNumFaces );
 	m_pShaderProgram->setCustomUniform( m_uniRadius,       m_fRadius );
 	m_pShaderProgram->setCustomUniform( m_uniLineDistance, m_fLineDistance );
 

@@ -8,6 +8,7 @@
 #include "linevisual.h"
 #include "engine.h"
 #include "uniformbuffer.h"
+#include "surfacevisual.h"
 
 namespace interplot
 {
@@ -74,6 +75,7 @@ private:
 	UniformBuffer<mat4, mat3, mat4> m_CameraUniformBuffer;
 
 	LineVisual m_Line;
+	SurfaceVisual m_Surface;
 };
 
 }
